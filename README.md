@@ -43,7 +43,8 @@ SCOAI Voice giải quyết cả ba bằng AI:
 - **Đọc to bản dịch:** bật/tắt bằng icon loa ở góc trên. Nên dùng tai nghe.
 - **Viên ngôn ngữ ở góc trên** (ví dụ "Việt ⇄ Trung") chỉnh hai thứ:
   - phụ đề dịch sang tiếng gì;
-- **Tạm dừng | Hoàn tất:** viên cam ở thanh dưới. Hoàn tất thì lưu vào Thư viện và tự tóm tắt.
+- **Pause | Stop:** viên cam ở thanh dưới, cùng nút **Ask** để hỏi nhanh. Stop thì lưu vào Thư viện và tự tóm tắt.
+- **Chạy nền:** tắt màn hình hay chuyển sang app khác, cuộc họp vẫn ghi và dịch tiếp. Thanh thông báo hiện tên cuộc họp và thời gian đang chạy; chạm vào là quay lại app. Bấm Pause hay Stop thì thông báo tắt.
 
 ### Hiểu sâu hơn
 - **Hỏi nhanh** (icon hội thoại ở góc trên): hỏi ngay trong cuộc họp, ví dụ "Họ vừa nói gì về giá?", "Còn chờ mình trả lời gì?". Câu trả lời kèm mốc giờ và được lưu cùng cuộc họp.
@@ -157,13 +158,14 @@ lib/
   openai/      realtime_translate (WebSocket dịch trực tiếp), responses_client, text_ai
                (dịch, tóm tắt, hỏi đáp, giải thích, đọc ảnh + prompt), transcribe_client
   live/        session_pipe (micro → phiên dịch, đệm khi mất mạng, xả phiên),
-  platform/    device_audio (micro điện thoại, loa, loa phòng, giữ màn hình sáng)
+  platform/    device_audio (micro điện thoại, loa, giữ màn hình sáng, dịch vụ chạy nền)
   storage/     library_store (JSON), key_store (Keystore), settings_store (cài đặt + chi phí)
   demo/        Chế độ thử: phiên dịch theo kịch bản, AI văn bản mẫu, mục Thư viện mẫu
   share/       minutes (văn bản biên bản để chia sẻ)
   ui/          home, meeting_setup, meeting, context, upload, saved, settings,
                captions (phụ đề), sheets (Giải thích, Hỏi nhanh), logo, theme
 android/app/src/main/kotlin/com/scoai/voice/openai/
+               MainActivity (kênh "scoai.voice/recording"), RecordingService (ghi khi tắt màn hình)
 ```
 
 **Luồng của một cuộc họp:**
@@ -187,6 +189,7 @@ Stop ──► Thư viện (JSON) ──► gpt-6.1-terra: tóm tắt, hỏi đ�
 - **Mất mạng.** App thử nối lại tối đa 3 lần và giữ tạm tối đa 15 giây âm thanh trong lúc chờ.
 - **Thuật ngữ.** Phiên dịch realtime không nhận danh sách thuật ngữ. Vì vậy câu đã xong mà có chứa thuật ngữ trong Ngữ cảnh sẽ được dịch lại bằng `gpt-6-luna` kèm danh sách thuật ngữ.
 - **Micro.** Cuộc họp luôn thu bằng micro của điện thoại, không dùng micro trên tai nghe.
+- **Chạy nền.** Android cắt micro ngay khi app rời khỏi màn hình, nên lúc ghi app chạy một foreground service kiểu `microphone` (`RecordingService.kt`) kèm thông báo thường trực. Android 13 trở lên hỏi quyền thông báo; từ chối thì việc ghi vẫn chạy, chỉ không thấy thông báo.
 
 ## Kiểm thử
 
@@ -195,7 +198,7 @@ flutter analyze
 flutter test
 ```
 
-68 test, chạy hoàn toàn bằng WebSocket và HTTP giả, không gọi OpenAI thật:
+71 test, chạy hoàn toàn bằng WebSocket và HTTP giả, không gọi OpenAI thật:
 - `test/openai/`:
   - gói tin `session.update`;
   - âm thanh cắt khúc 200 ms dạng base64;
@@ -213,6 +216,7 @@ flutter test
   - nối lại khi mất mạng, chuyển phiên;
   - đổi ngôn ngữ, sửa thuật ngữ;
   - Hỏi nhanh.
+- `test/live/background_test.dart`: dịch vụ chạy nền bật tắt đúng lúc và cập nhật đồng hồ trên thông báo.
 - `test/storage/`: Thư viện JSON, chặn id không an toàn, tính chi phí.
 
 ## Giới hạn và việc chưa làm
@@ -220,7 +224,6 @@ flutter test
 - **Chưa thử trên điện thoại thật với OpenAI thật.** Định dạng gói tin lấy từ tài liệu OpenAI ngày 13/11/2026.
 - **Mã ngôn ngữ:** tài liệu OpenAI chỉ có ví dụ `"es"`/`"fr"`; chưa kiểm chứng `vi`, `zh`, `en` cho `audio.output.language`.
 - **Độ trễ thực tế** và chất lượng ghép câu với giọng nói thật chưa đo.
-- **Ghi nền:** chưa có foreground service, nên tắt màn hình hoặc chuyển app thì Android có thể ngắt micro. Trong lúc họp, app giữ màn hình luôn sáng.
 - **Tệp tải lên:** tối đa 25 MB, chưa tự cắt tệp dài. `gpt-transcribe` không trả mốc giờ, nên Bản ghi của tệp đánh số câu.
 - **Ngôn ngữ:** hiện có Việt, Trung, Anh. Thêm ngôn ngữ khác cần cách nhận diện ngôn ngữ cho từng câu.
 - **Chưa có:** chế độ tối, xuất file bản ghi, tìm kiếm trong bản ghi, nghe lại âm thanh gốc, bản iOS.
