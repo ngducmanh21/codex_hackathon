@@ -11,25 +11,33 @@ class ScoaiLogo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Semantics(
-        label: 'SCOAI Voice',
-        image: true,
-        child: ExcludeSemantics(
-          child: Row(mainAxisSize: MainAxisSize.min, children: [
-            ScoaiMark(size: height),
-            const SizedBox(width: 8),
-            Text.rich(
-              const TextSpan(children: [
-                TextSpan(text: 'SCOAI', style: TextStyle(fontWeight: FontWeight.w800)),
+    label: 'SCOAI Voice',
+    image: true,
+    child: ExcludeSemantics(
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ScoaiMark(size: height),
+          const SizedBox(width: 8),
+          Text.rich(
+            const TextSpan(
+              children: [
+                TextSpan(
+                  text: 'SCOAI',
+                  style: TextStyle(fontWeight: FontWeight.w800),
+                ),
                 TextSpan(text: ' Voice'),
-              ]),
-              maxLines: 1,
-              softWrap: false,
-              textScaler: TextScaler.noScaling,
-              style: TextStyle(fontSize: height * 17 / 24, height: 1.2, fontWeight: FontWeight.w400, color: C.brand),
+              ],
             ),
-          ]),
-        ),
-      );
+            maxLines: 1,
+            softWrap: false,
+            textScaler: TextScaler.noScaling,
+            style: TextStyle(fontSize: height * 17 / 24, height: 1.2, fontWeight: FontWeight.w400, color: C.brand),
+          ),
+        ],
+      ),
+    ),
+  );
 }
 
 /// The hexagon alone, [size] dp high.
@@ -38,11 +46,8 @@ class ScoaiMark extends StatelessWidget {
   final double size;
 
   @override
-  Widget build(BuildContext context) => CustomPaint(
-        key: const Key('scoai-mark'),
-        size: Size(size * 32 / 36, size),
-        painter: const _MarkPainter(),
-      );
+  Widget build(BuildContext context) =>
+      CustomPaint(key: const Key('scoai-mark'), size: Size(size * 32 / 36, size), painter: const _MarkPainter());
 }
 
 /// Paths of the SCOAI mark (viewport 32×36): a rounded hexagon with four

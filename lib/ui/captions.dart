@@ -18,9 +18,8 @@ enum CaptionView {
 }
 
 /// Chinese speech gets SCOAI's soft orange; Vietnamese and English the navy.
-({Color bg, Color fg}) langColors(Lang? lang) => lang == Lang.zh
-    ? (bg: const Color(0xFFFDEEE4), fg: const Color(0xFF9A3E0A))
-    : (bg: C.brandSoft, fg: C.brand);
+({Color bg, Color fg}) langColors(Lang? lang) =>
+    lang == Lang.zh ? (bg: const Color(0xFFFDEEE4), fg: const Color(0xFF9A3E0A)) : (bg: C.brandSoft, fg: C.brand);
 
 /// "● Trung": the language a sentence was spoken in.
 class LangTag extends StatelessWidget {
@@ -39,11 +38,21 @@ class LangTag extends StatelessWidget {
           color: c.bg,
           shape: StadiumBorder(side: BorderSide(color: c.fg.withValues(alpha: 0.22))),
         ),
-        child: Row(mainAxisSize: MainAxisSize.min, children: [
-          Container(width: 5, height: 5, decoration: BoxDecoration(color: c.fg, shape: BoxShape.circle)),
-          const SizedBox(width: 5),
-          Text(lang?.short ?? '?', style: TextStyle(fontSize: 13, height: 18 / 13, fontWeight: FontWeight.w700, color: c.fg)),
-        ]),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 5,
+              height: 5,
+              decoration: BoxDecoration(color: c.fg, shape: BoxShape.circle),
+            ),
+            const SizedBox(width: 5),
+            Text(
+              lang?.short ?? '?',
+              style: TextStyle(fontSize: 13, height: 18 / 13, fontWeight: FontWeight.w700, color: c.fg),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -60,46 +69,54 @@ class _Barred extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => IntrinsicHeight(
-        child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 4),
-            child: DecoratedBox(
-              decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(2)),
-              child: const SizedBox(width: 3),
-            ),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: DecoratedBox(
+            decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(2)),
+            child: const SizedBox(width: 3),
           ),
-          const SizedBox(width: 10),
-          Expanded(child: child),
-        ]),
-      );
+        ),
+        const SizedBox(width: 10),
+        Expanded(child: child),
+      ],
+    ),
+  );
 }
 
 Widget _tagged(Lang? lang, String text, TextStyle style, {Key? key, bool you = false}) => Text.rich(
-      TextSpan(children: [
-        if (you)
-          const WidgetSpan(
-            alignment: PlaceholderAlignment.middle,
-            child: Padding(padding: EdgeInsets.only(right: 6), child: YouTag()),
-          ),
-        WidgetSpan(
+  TextSpan(
+    children: [
+      if (you)
+        const WidgetSpan(
           alignment: PlaceholderAlignment.middle,
-          child: Padding(padding: const EdgeInsets.only(right: 8), child: LangTag(lang)),
+          child: Padding(padding: EdgeInsets.only(right: 6), child: YouTag()),
         ),
-        TextSpan(text: text),
-      ]),
-      key: key,
-      style: style,
-    );
+      WidgetSpan(
+        alignment: PlaceholderAlignment.middle,
+        child: Padding(padding: const EdgeInsets.only(right: 8), child: LangTag(lang)),
+      ),
+      TextSpan(text: text),
+    ],
+  ),
+  key: key,
+  style: style,
+);
 
 /// "Bạn": a line the user said with "Tôi trả lời".
 class YouTag extends StatelessWidget {
   const YouTag({super.key});
   @override
   Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-        decoration: const ShapeDecoration(color: C.accent, shape: StadiumBorder()),
-        child: const Text('Bạn', style: TextStyle(fontSize: 13, height: 18 / 13, fontWeight: FontWeight.w700, color: Colors.white)),
-      );
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+    decoration: const ShapeDecoration(color: C.accent, shape: StadiumBorder()),
+    child: const Text(
+      'Bạn',
+      style: TextStyle(fontSize: 13, height: 18 / 13, fontWeight: FontWeight.w700, color: Colors.white),
+    ),
+  );
 }
 
 /// One finished sentence of a meeting.
@@ -108,14 +125,7 @@ class YouTag extends StatelessWidget {
 /// large beside the colour bar. Spoken in the language shown: one large
 /// line. The flag on the right marks it.
 class MeetingCaption extends StatelessWidget {
-  const MeetingCaption({
-    super.key,
-    required this.sentence,
-    required this.view,
-    this.onMark,
-    this.onTap,
-    this.time,
-  });
+  const MeetingCaption({super.key, required this.sentence, required this.view, this.onMark, this.onTap, this.time});
 
   final Sentence sentence;
   final CaptionView view;
@@ -153,39 +163,48 @@ class MeetingCaption extends StatelessWidget {
       onTapHint: onTap == null ? null : 'Giải thích',
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 10, 4, 10),
-        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Expanded(
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: onTap,
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              if (small != null) ...[
-                _tagged(s.lang, '$timePrefix$small', _smallStyle, key: const Key('caption-small'), you: you),
-                const SizedBox(height: 4),
-                _Barred(color: bar, child: Text(big, key: const Key('caption-big'), style: _bigStyle)),
-              ] else
-                _Barred(
-                  color: bar,
-                  child: _tagged(s.lang, big, _bigStyle, key: const Key('caption-big'), you: you),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: onTap,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (small != null) ...[
+                      _tagged(s.lang, '$timePrefix$small', _smallStyle, key: const Key('caption-small'), you: you),
+                      const SizedBox(height: 4),
+                      _Barred(
+                        color: bar,
+                        child: Text(big, key: const Key('caption-big'), style: _bigStyle),
+                      ),
+                    ] else
+                      _Barred(
+                        color: bar,
+                        child: _tagged(s.lang, big, _bigStyle, key: const Key('caption-big'), you: you),
+                      ),
+                    if (small == null && time != null)
+                      Padding(
+                        padding: const EdgeInsets.only(left: 13, top: 2),
+                        child: Text(time!, style: const TextStyle(fontSize: 12, color: C.inkMuted)),
+                      ),
+                  ],
                 ),
-              if (small == null && time != null)
-                Padding(
-                  padding: const EdgeInsets.only(left: 13, top: 2),
-                  child: Text(time!, style: const TextStyle(fontSize: 12, color: C.inkMuted)),
-                ),
-              ]),
-            ),
-          ),
-          if (onMark != null)
-            IconButton(
-              tooltip: s.marked ? 'Bỏ đánh dấu' : 'Đánh dấu',
-              onPressed: onMark,
-              icon: Icon(
-                s.marked ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
-                color: s.marked ? C.accent : C.inkMuted,
               ),
             ),
-        ]),
+            if (onMark != null)
+              IconButton(
+                tooltip: s.marked ? 'Bỏ đánh dấu' : 'Đánh dấu',
+                onPressed: onMark,
+                icon: Icon(
+                  s.marked ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
+                  color: s.marked ? C.accent : C.inkMuted,
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -216,23 +235,25 @@ class PendingCaption extends StatelessWidget {
     if (view == CaptionView.original || sameLanguage || source.isEmpty) {
       body = _Barred(color: bar, child: _tagged(lang, source.isEmpty ? translation : source, draft));
     } else {
-      body = Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        if (view == CaptionView.both || translation.isEmpty) _tagged(lang, source, _smallStyle),
-        const SizedBox(height: 4),
-        if (translation.isNotEmpty)
-          _Barred(color: bar, child: Text('$translation…', style: draft))
-        else
-          const Padding(
-            padding: EdgeInsets.only(left: 13),
-            child: Text('Đang dịch…', key: Key('caption-pending'), style: _smallStyle),
-          ),
-      ]);
+      body = Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (view == CaptionView.both || translation.isEmpty) _tagged(lang, source, _smallStyle),
+          const SizedBox(height: 4),
+          if (translation.isNotEmpty)
+            _Barred(
+              color: bar,
+              child: Text('$translation…', style: draft),
+            )
+          else
+            const Padding(
+              padding: EdgeInsets.only(left: 13),
+              child: Text('Đang dịch…', key: Key('caption-pending'), style: _smallStyle),
+            ),
+        ],
+      );
     }
-    return Padding(
-      key: const Key('pending-caption'),
-      padding: const EdgeInsets.fromLTRB(16, 10, 52, 10),
-      child: body,
-    );
+    return Padding(key: const Key('pending-caption'), padding: const EdgeInsets.fromLTRB(16, 10, 52, 10), child: body);
   }
 }
 
@@ -283,16 +304,25 @@ class _ListeningLineState extends State<ListeningLine> with SingleTickerProvider
     return Padding(
       key: const Key('listening-line'),
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-      child: Row(children: [
-        FadeTransition(
-          opacity: Tween<double>(begin: 0.35, end: 1).animate(_pulse),
-          child: Container(width: 8, height: 8, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
-        ),
-        const SizedBox(width: 10),
-        Flexible(
-          child: Text(widget.text, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: color)),
-        ),
-      ]),
+      child: Row(
+        children: [
+          FadeTransition(
+            opacity: Tween<double>(begin: 0.35, end: 1).animate(_pulse),
+            child: Container(
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Flexible(
+            child: Text(
+              widget.text,
+              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: color),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -314,36 +344,29 @@ class CaptionControls extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 6),
-        child: Wrap(
-          spacing: 8,
-          runSpacing: 6,
-          alignment: WrapAlignment.center,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            for (final v in CaptionView.values)
-              _Pill(
-                key: Key('view-${v.name}'),
-                selected: v == view,
-                onTap: () => onView(v),
-                child: Text(v.label),
-              ),
-            Builder(
-              builder: (anchor) => _Pill(
-                key: const Key('spoken-filter'),
-                selected: spoken != null,
-                semanticLabel: 'Lọc theo ngôn ngữ nói: ${spoken?.viName ?? 'mọi ngôn ngữ'}',
-                onTap: () => _pick(anchor),
-                child: Row(mainAxisSize: MainAxisSize.min, children: [
-                  Icon(Icons.filter_list_rounded, size: 18, color: spoken != null ? Colors.white : C.ink),
-                  if (spoken != null) ...[const SizedBox(width: 4), Text(spoken!.short)],
-                  Icon(Icons.expand_more_rounded, size: 18, color: spoken != null ? Colors.white : C.ink),
-                ]),
-              ),
+    padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+    child: Row(
+      children: [
+        ViewSegmented(view: view, onView: onView),
+        const Spacer(),
+        Builder(
+          builder: (anchor) => _Pill(
+            key: const Key('spoken-filter'),
+            selected: spoken != null,
+            semanticLabel: 'Lọc theo ngôn ngữ nói: ${spoken?.viName ?? 'mọi ngôn ngữ'}',
+            onTap: () => _pick(anchor),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.filter_list_rounded, size: 18, color: spoken != null ? Colors.white : C.ink),
+                if (spoken != null) ...[const SizedBox(width: 4), Text(spoken!.short)],
+              ],
             ),
-          ],
+          ),
         ),
-      );
+      ],
+    ),
+  );
 
   Future<void> _pick(BuildContext anchor) async {
     final box = anchor.findRenderObject()! as RenderBox;
@@ -353,13 +376,15 @@ class CaptionControls extends StatelessWidget {
       box.localToGlobal(box.size.bottomRight(Offset.zero), ancestor: overlay),
     );
     PopupMenuItem<String> item(String value, String label, bool on) => PopupMenuItem<String>(
-          key: Key('spoken-$value'),
-          value: value,
-          child: Row(children: [
-            Expanded(child: Text(label)),
-            if (on) const Icon(Icons.check, size: 20, color: C.brand),
-          ]),
-        );
+      key: Key('spoken-$value'),
+      value: value,
+      child: Row(
+        children: [
+          Expanded(child: Text(label)),
+          if (on) const Icon(Icons.check, size: 20, color: C.brand),
+        ],
+      ),
+    );
     final picked = await showMenu<String>(
       context: anchor,
       position: RelativeRect.fromRect(rect, Offset.zero & overlay.size),
@@ -382,31 +407,116 @@ class _Pill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Semantics(
-        button: true,
-        selected: selected,
-        label: semanticLabel,
-        child: Material(
-          color: selected ? C.brand : C.surface,
-          shape: StadiumBorder(side: BorderSide(color: selected ? C.brand : C.hairline)),
-          child: InkWell(
-            customBorder: const StadiumBorder(),
-            onTap: onTap,
-            child: Container(
-              height: 40,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              alignment: Alignment.center,
-              child: DefaultTextStyle.merge(
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: selected ? FontWeight.w700 : FontWeight.w400,
-                  color: selected ? Colors.white : C.ink,
-                ),
-                child: child,
-              ),
+    button: true,
+    selected: selected,
+    label: semanticLabel,
+    child: Material(
+      color: selected ? C.brand : C.surface,
+      shape: StadiumBorder(side: BorderSide(color: selected ? C.brand : C.hairline)),
+      child: InkWell(
+        customBorder: const StadiumBorder(),
+        onTap: onTap,
+        child: Container(
+          height: 40,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          alignment: Alignment.center,
+          child: DefaultTextStyle.merge(
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: selected ? FontWeight.w700 : FontWeight.w400,
+              color: selected ? Colors.white : C.ink,
             ),
+            child: child,
           ),
         ),
-      );
+      ),
+    ),
+  );
+}
+
+/// Cả hai | Gốc | Dịch as one segmented control, as in SCOAI Voice.
+class ViewSegmented extends StatelessWidget {
+  const ViewSegmented({super.key, required this.view, required this.onView});
+  final CaptionView view;
+  final ValueChanged<CaptionView> onView;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    container: true,
+    label: 'Hiện phụ đề',
+    child: Container(
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(color: C.brandSoft, borderRadius: BorderRadius.circular(18)),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (final v in CaptionView.values)
+            Semantics(
+              button: true,
+              selected: v == view,
+              child: Material(
+                key: Key('view-${v.name}'),
+                color: v == view ? C.brand : Colors.transparent,
+                shape: const StadiumBorder(),
+                child: InkWell(
+                  customBorder: const StadiumBorder(),
+                  onTap: () => onView(v),
+                  child: Container(
+                    height: 30,
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    alignment: Alignment.center,
+                    child: Text(
+                      v.label,
+                      textScaler: TextScaler.noScaling,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: v == view ? FontWeight.w700 : FontWeight.w600,
+                        color: v == view ? Colors.white : C.brand,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    ),
+  );
+}
+
+/// A 40 dp round icon button on a soft ground; filled navy when [on].
+class RoundIconButton extends StatelessWidget {
+  const RoundIconButton({
+    super.key,
+    required this.icon,
+    required this.tooltip,
+    required this.onPressed,
+    this.on = false,
+  });
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback? onPressed;
+  final bool on;
+
+  @override
+  Widget build(BuildContext context) => Tooltip(
+    message: tooltip,
+    child: Semantics(
+      button: true,
+      toggled: on,
+      label: tooltip,
+      excludeSemantics: true,
+      child: Material(
+        color: on ? C.brand : C.sunken,
+        shape: const CircleBorder(),
+        child: InkWell(
+          customBorder: const CircleBorder(),
+          onTap: onPressed,
+          child: SizedBox(width: 40, height: 40, child: Icon(icon, size: 20, color: on ? Colors.white : C.brand)),
+        ),
+      ),
+    ),
+  );
 }
 
 /// "Mới nhất ↓" over the captions while the user reads older ones.
@@ -416,24 +526,30 @@ class JumpToLatest extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Material(
-        key: const Key('jump-latest'),
-        color: C.surface,
-        elevation: 4,
-        shadowColor: C.ink.withValues(alpha: 0.2),
-        shape: const StadiumBorder(side: BorderSide(color: C.hairline)),
-        child: InkWell(
-          customBorder: const StadiumBorder(),
-          onTap: onPressed,
-          child: const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            child: Row(mainAxisSize: MainAxisSize.min, children: [
-              Text('Mới nhất', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: C.brand)),
-              SizedBox(width: 6),
-              Icon(Icons.arrow_downward_rounded, size: 18, color: C.brand),
-            ]),
-          ),
+    key: const Key('jump-latest'),
+    color: C.surface,
+    elevation: 4,
+    shadowColor: C.ink.withValues(alpha: 0.2),
+    shape: const StadiumBorder(side: BorderSide(color: C.hairline)),
+    child: InkWell(
+      customBorder: const StadiumBorder(),
+      onTap: onPressed,
+      child: const Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Mới nhất',
+              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: C.brand),
+            ),
+            SizedBox(width: 6),
+            Icon(Icons.arrow_downward_rounded, size: 18, color: C.brand),
+          ],
         ),
-      );
+      ),
+    ),
+  );
 }
 
 /// SCOAI's orange capsule: "Tạm dừng" (or "Tiếp tục") on the left and a
@@ -460,59 +576,72 @@ class MeetingCapsule extends StatelessWidget {
       decoration: BoxDecoration(gradient: accentGradient, borderRadius: BorderRadius.circular(32)),
       child: Padding(
         padding: const EdgeInsets.all(6),
-        child: Row(children: [
-          Expanded(
-            child: Material(
-              type: MaterialType.transparency,
-              child: InkWell(
-                key: const Key('pause-resume'),
-                customBorder: const StadiumBorder(),
-                onTap: onPauseResume,
-                child: Opacity(
-                  opacity: onPauseResume == null ? 0.6 : 1,
-                  child: SizedBox(
-                    height: 52,
-                    child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                      Icon(icon, color: Colors.white),
-                      const SizedBox(width: 8),
-                      Flexible(
-                        child: Text(label,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w700, color: Colors.white)),
+        child: Row(
+          children: [
+            Expanded(
+              child: Material(
+                type: MaterialType.transparency,
+                child: InkWell(
+                  key: const Key('pause-resume'),
+                  customBorder: const StadiumBorder(),
+                  onTap: onPauseResume,
+                  child: Opacity(
+                    opacity: onPauseResume == null ? 0.6 : 1,
+                    child: SizedBox(
+                      height: 52,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(icon, color: Colors.white),
+                          const SizedBox(width: 8),
+                          Flexible(
+                            child: Text(
+                              label,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w700, color: Colors.white),
+                            ),
+                          ),
+                        ],
                       ),
-                    ]),
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-          Material(
-            color: C.surface,
-            shape: const StadiumBorder(),
-            child: InkWell(
-              key: const Key('finish'),
-              customBorder: const StadiumBorder(),
-              onTap: onFinish,
-              child: Opacity(
-                opacity: onFinish == null ? 0.5 : 1,
-                child: Container(
-                  height: 52,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  alignment: Alignment.center,
-                  child: Row(mainAxisSize: MainAxisSize.min, children: [
-                    Container(
-                      width: 16,
-                      height: 16,
-                      decoration: BoxDecoration(color: C.danger, borderRadius: BorderRadius.circular(4)),
+            Material(
+              color: C.surface,
+              shape: const StadiumBorder(),
+              child: InkWell(
+                key: const Key('finish'),
+                customBorder: const StadiumBorder(),
+                onTap: onFinish,
+                child: Opacity(
+                  opacity: onFinish == null ? 0.5 : 1,
+                  child: Container(
+                    height: 52,
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    alignment: Alignment.center,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 16,
+                          height: 16,
+                          decoration: BoxDecoration(color: C.danger, borderRadius: BorderRadius.circular(4)),
+                        ),
+                        const SizedBox(width: 10),
+                        const Text(
+                          'Hoàn tất',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: C.ink),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 10),
-                    const Text('Hoàn tất', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: C.ink)),
-                  ]),
+                  ),
                 ),
               ),
             ),
-          ),
-        ]),
+          ],
+        ),
       ),
     );
   }
@@ -520,6 +649,6 @@ class MeetingCapsule extends StatelessWidget {
 
 /// Indexes of [sentences] spoken in [spoken] (all when null).
 List<int> visibleIndexes(List<Sentence> sentences, Lang? spoken) => [
-      for (var i = 0; i < sentences.length; i++)
-        if (spoken == null || sentences[i].lang == spoken) i,
-    ];
+  for (var i = 0; i < sentences.length; i++)
+    if (spoken == null || sentences[i].lang == spoken) i,
+];

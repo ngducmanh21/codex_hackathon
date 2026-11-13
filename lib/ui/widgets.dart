@@ -53,7 +53,14 @@ class AccentButton extends StatelessWidget {
 
 /// Navy outlined pill for secondary actions.
 class OutlinePill extends StatelessWidget {
-  const OutlinePill({super.key, required this.label, this.icon, this.onPressed, this.height = 48, this.color = C.brand});
+  const OutlinePill({
+    super.key,
+    required this.label,
+    this.icon,
+    this.onPressed,
+    this.height = 48,
+    this.color = C.brand,
+  });
 
   final String label;
   final IconData? icon;
@@ -63,25 +70,31 @@ class OutlinePill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => SizedBox(
-        height: height,
-        child: OutlinedButton.icon(
-          onPressed: onPressed,
-          icon: icon == null ? const SizedBox.shrink() : Icon(icon, size: 18),
-          label: Text(label, overflow: TextOverflow.ellipsis),
-          style: OutlinedButton.styleFrom(
-            foregroundColor: color,
-            side: BorderSide(color: onPressed == null ? C.hairline : color),
-            shape: const StadiumBorder(),
-            textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-            padding: const EdgeInsets.symmetric(horizontal: 18),
-          ),
-        ),
-      );
+    height: height,
+    child: OutlinedButton.icon(
+      onPressed: onPressed,
+      icon: icon == null ? const SizedBox.shrink() : Icon(icon, size: 18),
+      label: Text(label, overflow: TextOverflow.ellipsis),
+      style: OutlinedButton.styleFrom(
+        foregroundColor: color,
+        side: BorderSide(color: onPressed == null ? C.hairline : color),
+        shape: const StadiumBorder(),
+        textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+        padding: const EdgeInsets.symmetric(horizontal: 18),
+      ),
+    ),
+  );
 }
 
 /// A row of pill-shaped single-choice chips.
 class PillChoices<T> extends StatelessWidget {
-  const PillChoices({super.key, required this.values, required this.selected, required this.label, required this.onChanged});
+  const PillChoices({
+    super.key,
+    required this.values,
+    required this.selected,
+    required this.label,
+    required this.onChanged,
+  });
 
   final List<T> values;
   final T selected;
@@ -90,28 +103,28 @@ class PillChoices<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: [
-          for (final v in values)
-            ChoiceChip(
-              label: Text(label(v)),
-              selected: v == selected,
-              showCheckmark: false,
-              onSelected: onChanged == null ? null : (_) => onChanged!(v),
-              labelStyle: TextStyle(
-                fontSize: 15,
-                color: v == selected ? Colors.white : C.ink,
-                fontWeight: v == selected ? FontWeight.w500 : FontWeight.w400,
-              ),
-              selectedColor: C.brand,
-              backgroundColor: C.surface,
-              side: BorderSide(color: v == selected ? C.brand : C.hairline),
-              shape: const StadiumBorder(),
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-            ),
-        ],
-      );
+    spacing: 8,
+    runSpacing: 8,
+    children: [
+      for (final v in values)
+        ChoiceChip(
+          label: Text(label(v)),
+          selected: v == selected,
+          showCheckmark: false,
+          onSelected: onChanged == null ? null : (_) => onChanged!(v),
+          labelStyle: TextStyle(
+            fontSize: 15,
+            color: v == selected ? Colors.white : C.ink,
+            fontWeight: v == selected ? FontWeight.w500 : FontWeight.w400,
+          ),
+          selectedColor: C.brand,
+          backgroundColor: C.surface,
+          side: BorderSide(color: v == selected ? C.brand : C.hairline),
+          shape: const StadiumBorder(),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        ),
+    ],
+  );
 }
 
 class LangChoices extends StatelessWidget {
@@ -130,9 +143,12 @@ class SectionLabel extends StatelessWidget {
   final String text;
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.only(bottom: 10),
-        child: Text(text, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: C.inkMuted)),
-      );
+    padding: const EdgeInsets.only(bottom: 10),
+    child: Text(
+      text,
+      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: C.inkMuted),
+    ),
+  );
 }
 
 class SurfaceCard extends StatelessWidget {
@@ -143,14 +159,17 @@ class SurfaceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Material(
-        color: C.surface,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: C.hairline),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(onTap: onTap, child: Padding(padding: padding, child: child)),
-      );
+    color: C.surface,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(16),
+      side: const BorderSide(color: C.hairline),
+    ),
+    clipBehavior: Clip.antiAlias,
+    child: InkWell(
+      onTap: onTap,
+      child: Padding(padding: padding, child: child),
+    ),
+  );
 }
 
 /// A banner for problems (lost connection, missing key…).
@@ -164,15 +183,19 @@ class NoticeBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        width: double.infinity,
-        color: C.warningSoft,
-        padding: const EdgeInsets.fromLTRB(20, 10, 8, 10),
-        child: Row(children: [
-          Expanded(child: Text(text, style: const TextStyle(fontSize: 14, color: C.warning))),
-          if (action2 != null) TextButton(onPressed: onAction2, child: Text(action2!)),
-          if (action != null) TextButton(onPressed: onAction, child: Text(action!)),
-        ]),
-      );
+    width: double.infinity,
+    color: C.warningSoft,
+    padding: const EdgeInsets.fromLTRB(20, 10, 8, 10),
+    child: Row(
+      children: [
+        Expanded(
+          child: Text(text, style: const TextStyle(fontSize: 14, color: C.warning)),
+        ),
+        if (action2 != null) TextButton(onPressed: onAction2, child: Text(action2!)),
+        if (action != null) TextButton(onPressed: onAction, child: Text(action!)),
+      ],
+    ),
+  );
 }
 
 void showSnack(BuildContext context, String text) =>

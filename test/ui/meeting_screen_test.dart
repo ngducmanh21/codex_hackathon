@@ -118,7 +118,8 @@ void main() {
     testWidgets('only "Đang nghe…" before the first sentence, then bilingual captions', (tester) async {
       await open(tester);
       expect(find.text('Đang nghe…'), findsOneWidget);
-      expect(find.byKey(const Key('view-both')), findsNothing, reason: 'no controls over an empty screen');
+      expect(find.text('Đang ghi · 00:00'), findsOneWidget, reason: 'the status capsule');
+      expect(find.byKey(const Key('languages')), findsOneWidget, reason: 'languages can be set before anyone speaks');
 
       backend.last.source('这次的样品看过了吧？', 0);
       backend.last.translation('Mọi người đã xem mẫu chưa? ');
@@ -196,16 +197,19 @@ void main() {
       await tester.pump();
       expect(c.sentences, hasLength(2));
 
-      await tester.tap(find.byKey(const Key('spoken-filter')));
-      // The menu opens with an animation; "Đang nghe…" pulses forever, so
-      // pump a fixed time instead of waiting to settle.
+      // The filter lives in the language sheet. The sheet opens with an
+      // animation and "Đang nghe…" pulses forever, so pump a fixed time.
+      await tester.tap(find.byKey(const Key('languages')));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
-      await tester.tap(find.byKey(const Key('spoken-zh')));
+      await tester.tap(find.descendant(of: find.byKey(const Key('lang-filter')), matching: find.text('Tiếng Trung')));
+      await tester.pump();
+      await tester.tapAt(const Offset(10, 10)); // close the sheet
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
       expect(find.text('Được.'), findsOneWidget);
       expect(find.text('Chúng tôi đồng ý.'), findsNothing);
+      expect(find.byKey(const Key('filter-badge')), findsOneWidget, reason: 'the pill shows the filter');
       await close(tester);
     });
   });

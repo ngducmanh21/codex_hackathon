@@ -178,43 +178,57 @@ class _MeetingScreenState extends State<MeetingScreen> {
     isScrollControlled: true,
     builder: (ctx) => ListenableBuilder(
       listenable: c,
-      builder: (ctx, _) => SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Ngôn ngữ', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
-                const SizedBox(height: 16),
-                const SectionLabel('Phụ đề dịch sang · bạn đọc'),
-                PillChoices<Lang>(
-                  key: const Key('lang-target'),
-                  values: Lang.values,
-                  selected: c.target,
-                  label: (l) => l.viTitle,
-                  onChanged: c.state == LiveState.finished ? null : c.setTarget,
-                ),
-                const SizedBox(height: 20),
-                const SectionLabel('Phát biểu bằng · mọi người nghe'),
-                PillChoices<Lang?>(
-                  key: const Key('lang-speak'),
-                  values: [
-                    null,
-                    for (final l in Lang.values)
-                      if (l != c.target) l,
-                  ],
-                  selected: c.replyLangChoice,
-                  label: (l) => l?.viTitle ?? 'Tự động (${c.replyLang.short})',
-                  onChanged: c.setReplyLang,
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Tự động: ngôn ngữ nghe thấy nhiều nhất gần đây.',
-                  style: TextStyle(fontSize: 13, color: C.inkMuted),
-                ),
-              ],
+      builder: (ctx, _) => StatefulBuilder(
+        builder: (ctx, setSheet) => SafeArea(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Ngôn ngữ', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+                  const SizedBox(height: 16),
+                  const SectionLabel('Phụ đề dịch sang · bạn đọc'),
+                  PillChoices<Lang>(
+                    key: const Key('lang-target'),
+                    values: Lang.values,
+                    selected: c.target,
+                    label: (l) => l.viTitle,
+                    onChanged: c.state == LiveState.finished ? null : c.setTarget,
+                  ),
+                  const SizedBox(height: 20),
+                  const SectionLabel('Phát biểu bằng · mọi người nghe'),
+                  PillChoices<Lang?>(
+                    key: const Key('lang-speak'),
+                    values: [
+                      null,
+                      for (final l in Lang.values)
+                        if (l != c.target) l,
+                    ],
+                    selected: c.replyLangChoice,
+                    label: (l) => l?.viTitle ?? 'Tự động (${c.replyLang.short})',
+                    onChanged: c.setReplyLang,
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Tự động: ngôn ngữ nghe thấy nhiều nhất gần đây.',
+                    style: TextStyle(fontSize: 13, color: C.inkMuted),
+                  ),
+                  const SizedBox(height: 20),
+                  const SectionLabel('Chỉ hiện câu nói bằng'),
+                  PillChoices<Lang?>(
+                    key: const Key('lang-filter'),
+                    values: const [null, ...Lang.values],
+                    selected: _spoken,
+                    label: (l) => l?.viTitle ?? 'Tất cả',
+                    onChanged: (l) {
+                      setState(() => _spoken = l);
+                      setSheet(() {});
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -246,50 +260,46 @@ class _MeetingScreenState extends State<MeetingScreen> {
     LiveState.failed => ('Không bắt đầu được', false),
   };
 
-  Widget _title() {
+  /// "● Đang ghi · 12:48" on soft red while recording; grey otherwise.
+  Widget _status() {
     final clock = formatClock(c.recorded);
-    if (c.state == LiveState.live) {
-      return Row(
+    final live = c.state == LiveState.live;
+    final text = switch (c.state) {
+      LiveState.live => 'Đang ghi · $clock',
+      LiveState.paused => 'Tạm dừng · $clock',
+      LiveState.starting when _resuming => 'Đang tiếp tục…',
+      _ => _statusLine.$1,
+    };
+    final fg = live ? C.danger : C.inkMuted;
+    return Container(
+      height: 32,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(color: live ? C.dangerSoft : C.sunken, borderRadius: BorderRadius.circular(16)),
+      child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.graphic_eq_rounded, color: C.brand),
+          Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(color: fg, shape: BoxShape.circle),
+          ),
           const SizedBox(width: 8),
-          Text(
-            clock,
-            key: const Key('meeting-status'),
-            semanticsLabel: 'Đang nghe · $clock',
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-              fontFeatures: [FontFeature.tabularFigures()],
+          Flexible(
+            child: Text(
+              text,
+              key: const Key('meeting-status'),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: fg,
+                fontFeatures: const [FontFeature.tabularFigures()],
+              ),
             ),
           ),
         ],
-      );
-    }
-    final text = switch (c.state) {
-      LiveState.paused => 'Tạm dừng · $clock',
-      LiveState.starting when _resuming => 'Đang tiếp tục… · $clock',
-      _ => _statusLine.$1,
-    };
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 8,
-          height: 8,
-          decoration: const BoxDecoration(color: C.inkMuted, shape: BoxShape.circle),
-        ),
-        const SizedBox(width: 8),
-        Flexible(
-          child: Text(
-            text,
-            key: const Key('meeting-status'),
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
-          ),
-        ),
-      ],
+      ),
     );
   }
 
@@ -313,38 +323,31 @@ class _MeetingScreenState extends State<MeetingScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          centerTitle: true,
+          backgroundColor: C.surface,
+          centerTitle: false,
+          titleSpacing: 0,
           leading: IconButton(
             tooltip: 'Quay lại',
             icon: const Icon(Icons.chevron_left_rounded, size: 30, color: C.brand),
             onPressed: () => Navigator.maybePop(context),
           ),
-          title: _title(),
+          title: Align(alignment: Alignment.centerLeft, child: _status()),
           actions: [
-            IconButton(
+            RoundIconButton(
               key: const Key('quick-ask'),
+              icon: Icons.contact_support_outlined,
               tooltip: 'Hỏi nhanh về cuộc họp',
-              icon: const Icon(Icons.question_answer_outlined, color: C.brand),
               onPressed: c.textAi == null ? null : () => showAskSheet(context, c),
             ),
-            IconButton(
+            const SizedBox(width: 8),
+            RoundIconButton(
               key: const Key('read-aloud'),
+              icon: c.readAloud ? Icons.volume_up_rounded : Icons.volume_off_rounded,
               tooltip: c.readAloud ? 'Đọc to bản dịch: đang bật' : 'Đọc to bản dịch: đang tắt',
-              isSelected: c.readAloud,
-              icon: Icon(
-                c.readAloud ? Icons.volume_up_rounded : Icons.volume_off_rounded,
-                color: c.readAloud ? C.brand : C.inkMuted,
-              ),
+              on: c.readAloud,
               onPressed: () => c.setReadAloud(!c.readAloud),
             ),
-            Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: _LangPill(
-                target: c.target,
-                speak: c.replyLang,
-                onPressed: state == LiveState.finished ? null : _pickLanguages,
-              ),
-            ),
+            const SizedBox(width: 12),
           ],
         ),
         body: Column(
@@ -355,41 +358,72 @@ class _MeetingScreenState extends State<MeetingScreen> {
                 key: Key('demo-notice'),
                 text: 'Chế độ thử: câu nói là kịch bản mẫu; micro và loa vẫn chạy thật.',
               ),
-            if (all.isNotEmpty)
-              CaptionControls(
-                view: _view,
-                onView: (v) => setState(() => _view = v),
-                spoken: _spoken,
-                onSpoken: (l) => setState(() => _spoken = l),
+            Container(
+              decoration: const BoxDecoration(
+                color: C.surface,
+                border: Border(bottom: BorderSide(color: C.hairline)),
               ),
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 10),
+              child: Row(
+                children: [
+                  _LangPill(
+                    target: c.target,
+                    speak: c.replyLang,
+                    filter: _spoken,
+                    onPressed: state == LiveState.finished ? null : _pickLanguages,
+                  ),
+                  const Spacer(),
+                  ViewSegmented(view: _view, onView: (v) => setState(() => _view = v)),
+                ],
+              ),
+            ),
             Expanded(
               child: Stack(
                 children: [
-                  ListView(
+                  // The newest line sits at the bottom, as in SCOAI Voice:
+                  // a short meeting hangs above the dock instead of
+                  // leaving a gap under the captions.
+                  CustomScrollView(
                     key: const Key('meeting-captions'),
                     controller: _scroll,
-                    padding: const EdgeInsets.only(bottom: 8),
-                    children: [
-                      if (all.isNotEmpty && shown.isEmpty)
-                        Padding(
-                          key: const Key('spoken-none'),
-                          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                          child: Text(
-                            'Chưa có câu nào bằng ${_spoken!.viName}.',
-                            style: Theme.of(context).textTheme.bodySmall,
+                    slivers: [
+                      SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              if (all.isNotEmpty && shown.isEmpty)
+                                Padding(
+                                  key: const Key('spoken-none'),
+                                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                                  child: Text(
+                                    'Chưa có câu nào bằng ${_spoken!.viName}.',
+                                    style: Theme.of(context).textTheme.bodySmall,
+                                  ),
+                                ),
+                              for (final i in shown)
+                                MeetingCaption(
+                                  key: ValueKey('caption-$i'),
+                                  sentence: all[i],
+                                  view: _view,
+                                  onMark: () => c.toggleMark(i),
+                                  onTap: c.textAi == null ? null : () => _explain(i),
+                                ),
+                              if (showPending)
+                                PendingCaption(
+                                  source: liveSource,
+                                  translation: liveTranslation,
+                                  target: c.target,
+                                  view: _view,
+                                ),
+                              if (state != LiveState.finished) ListeningLine(text: status, active: active),
+                            ],
                           ),
                         ),
-                      for (final i in shown)
-                        MeetingCaption(
-                          key: ValueKey('caption-$i'),
-                          sentence: all[i],
-                          view: _view,
-                          onMark: () => c.toggleMark(i),
-                          onTap: c.textAi == null ? null : () => _explain(i),
-                        ),
-                      if (showPending)
-                        PendingCaption(source: liveSource, translation: liveTranslation, target: c.target, view: _view),
-                      if (state != LiveState.finished) ListeningLine(text: status, active: active),
+                      ),
                     ],
                   ),
                   if (_awayFromLatest)
@@ -407,14 +441,6 @@ class _MeetingScreenState extends State<MeetingScreen> {
               padding: EdgeInsets.fromLTRB(16, 8, 16, 12 + MediaQuery.paddingOf(context).bottom),
               child: Row(
                 children: [
-                  _ReplyButton(
-                    replying: c.replying,
-                    lang: c.replyLang,
-                    onPressed: state != LiveState.live || (c.reply != null && !c.replying)
-                        ? null
-                        : (c.replying ? c.endReply : c.startReply),
-                  ),
-                  const SizedBox(width: 10),
                   Expanded(
                     child: MeetingCapsule(
                       paused: state == LiveState.paused,
@@ -430,6 +456,14 @@ class _MeetingScreenState extends State<MeetingScreen> {
                           ? null
                           : _finish,
                     ),
+                  ),
+                  const SizedBox(width: 10),
+                  _ReplyButton(
+                    replying: c.replying,
+                    lang: c.replyLang,
+                    onPressed: state != LiveState.live || (c.reply != null && !c.replying)
+                        ? null
+                        : (c.replying ? c.endReply : c.startReply),
                   ),
                 ],
               ),
@@ -555,16 +589,21 @@ class _ReplyBanner extends StatelessWidget {
 
 /// "Việt ⇄ Trung" in the top bar: captions in the first, "Phát biểu" in the
 /// second. Opens the language sheet.
+const _pillText = TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: C.ink);
+
 class _LangPill extends StatelessWidget {
-  const _LangPill({required this.target, required this.speak, required this.onPressed});
+  const _LangPill({required this.target, required this.speak, required this.onPressed, this.filter});
   final Lang target;
   final Lang speak;
+  final Lang? filter;
   final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) => Semantics(
     button: true,
-    label: 'Ngôn ngữ: phụ đề ${target.viName}, phát biểu ${speak.viName}',
+    label:
+        'Ngôn ngữ: phụ đề ${target.viName}, phát biểu ${speak.viName}'
+        '${filter == null ? '' : ', chỉ hiện câu ${filter!.viName}'}',
     excludeSemantics: true,
     child: Material(
       key: const Key('languages'),
@@ -573,23 +612,39 @@ class _LangPill extends StatelessWidget {
       child: InkWell(
         customBorder: const StadiumBorder(),
         onTap: onPressed,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+        child: Container(
+          height: 36,
+          padding: const EdgeInsets.only(left: 12, right: 8),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                target.short,
-                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: C.ink),
-              ),
+              Text(target.short, style: _pillText),
               const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 3),
+                padding: EdgeInsets.symmetric(horizontal: 4),
                 child: Icon(Icons.swap_horiz_rounded, size: 16, color: C.inkMuted),
               ),
-              Text(
-                speak.short,
-                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: C.ink),
-              ),
+              Text(speak.short, style: _pillText),
+              if (filter != null) ...[
+                const SizedBox(width: 8),
+                Container(
+                  key: const Key('filter-badge'),
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(color: C.brandSoft, borderRadius: BorderRadius.circular(8)),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.filter_list_rounded, size: 13, color: C.brand),
+                      const SizedBox(width: 2),
+                      Text(
+                        filter!.short,
+                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: C.brand),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+              const SizedBox(width: 2),
+              const Icon(Icons.expand_more_rounded, size: 18, color: C.inkMuted),
             ],
           ),
         ),

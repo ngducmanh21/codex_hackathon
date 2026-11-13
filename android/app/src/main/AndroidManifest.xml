@@ -2,6 +2,8 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <!-- "Sắp tới": read-only view of upcoming meetings. -->
+    <uses-permission android:name="android.permission.READ_CALENDAR" />
     <application
         android:label="SCOAI Voice"
         android:allowBackup="false"

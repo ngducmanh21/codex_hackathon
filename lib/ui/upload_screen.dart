@@ -39,7 +39,9 @@ class _UploadScreenState extends State<UploadScreen> {
     setState(() {
       _name = f.name;
       _bytes = bytes;
-      _error = bytes.length > maxUploadBytes ? 'Tệp lớn hơn 25 MB, giới hạn của OpenAI. Hãy cắt nhỏ hoặc nén tệp.' : null;
+      _error = bytes.length > maxUploadBytes
+          ? 'Tệp lớn hơn 25 MB, giới hạn của OpenAI. Hãy cắt nhỏ hoặc nén tệp.'
+          : null;
     });
   }
 
@@ -65,7 +67,12 @@ class _UploadScreenState extends State<UploadScreen> {
           () {
             final lang = guessLang(parts[i]) ?? _spoken;
             final same = lang == target || translated[i].trim() == parts[i].trim();
-            return Sentence(at: Duration.zero, source: parts[i], translation: same ? '' : translated[i].trim(), lang: lang);
+            return Sentence(
+              at: Duration.zero,
+              source: parts[i],
+              translation: same ? '' : translated[i].trim(),
+              lang: lang,
+            );
           }(),
       ];
       final now = DateTime.now();
@@ -83,9 +90,11 @@ class _UploadScreenState extends State<UploadScreen> {
       await s.library.save(item);
       s.libraryChanged();
       if (!mounted) return;
-      await Navigator.of(context).pushReplacement(MaterialPageRoute<void>(
-        builder: (_) => SavedScreen(itemId: item.id, autoSummarize: _summarize),
-      ));
+      await Navigator.of(context).pushReplacement(
+        MaterialPageRoute<void>(
+          builder: (_) => SavedScreen(itemId: item.id, autoSummarize: _summarize),
+        ),
+      );
     } on Object catch (e) {
       if (!mounted) return;
       setState(() {
@@ -109,26 +118,41 @@ class _UploadScreenState extends State<UploadScreen> {
           children: [
             SurfaceCard(
               onTap: _pick,
-              child: Row(children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(color: C.brandSoft, borderRadius: BorderRadius.circular(12)),
-                  child: const Icon(Icons.music_note_outlined, color: C.brand),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(_name ?? 'Chưa chọn tệp', maxLines: 1, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.titleMedium),
-                    const SizedBox(height: 3),
-                    Text(
-                      _bytes == null ? 'm4a, mp3, wav, ogg, webm… tối đa 25 MB' : '${(_bytes!.length / 1024 / 1024).toStringAsFixed(1)} MB',
-                      style: Theme.of(context).textTheme.bodySmall,
+              child: Row(
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(color: C.brandSoft, borderRadius: BorderRadius.circular(12)),
+                    child: const Icon(Icons.music_note_outlined, color: C.brand),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _name ?? 'Chưa chọn tệp',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          _bytes == null
+                              ? 'm4a, mp3, wav, ogg, webm… tối đa 25 MB'
+                              : '${(_bytes!.length / 1024 / 1024).toStringAsFixed(1)} MB',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ],
                     ),
-                  ]),
-                ),
-                Text(_name == null ? 'Chọn tệp' : 'Đổi tệp', style: const TextStyle(fontWeight: FontWeight.w600, color: C.brand)),
-              ]),
+                  ),
+                  Text(
+                    _name == null ? 'Chọn tệp' : 'Đổi tệp',
+                    style: const TextStyle(fontWeight: FontWeight.w600, color: C.brand),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 24),
             const SectionLabel('Ngôn ngữ trong tệp'),
@@ -144,14 +168,15 @@ class _UploadScreenState extends State<UploadScreen> {
             const SizedBox(height: 24),
             ContextCard(value: _context, target: target, onChanged: (c) => setState(() => _context = c)),
             const SizedBox(height: 16),
-            Row(children: [
-              const Expanded(child: Text('Tóm tắt sau khi xử lý', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600))),
-              Switch(value: _summarize, onChanged: (v) => setState(() => _summarize = v)),
-            ]),
-            if (_error != null) ...[
-              const SizedBox(height: 16),
-              Text(_error!, style: const TextStyle(color: C.danger)),
-            ],
+            Row(
+              children: [
+                const Expanded(
+                  child: Text('Tóm tắt sau khi xử lý', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                ),
+                Switch(value: _summarize, onChanged: (v) => setState(() => _summarize = v)),
+              ],
+            ),
+            if (_error != null) ...[const SizedBox(height: 16), Text(_error!, style: const TextStyle(color: C.danger))],
           ],
         ),
       ),
@@ -161,11 +186,14 @@ class _UploadScreenState extends State<UploadScreen> {
           child: working
               ? SizedBox(
                   height: 56,
-                  child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                    const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
-                    const SizedBox(width: 12),
-                    Text(_step!, style: Theme.of(context).textTheme.bodyMedium),
-                  ]),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
+                      const SizedBox(width: 12),
+                      Text(_step!, style: Theme.of(context).textTheme.bodyMedium),
+                    ],
+                  ),
                 )
               : AccentButton(
                   label: 'Xử lý và lưu',

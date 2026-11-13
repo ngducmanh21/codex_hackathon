@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 
+import '../calendar/calendar_source.dart';
 import '../demo/demo_http.dart';
 import '../demo/demo_library.dart';
 import '../demo/demo_translate.dart' as demo;
@@ -33,7 +34,12 @@ class AppServices {
     SessionOpener? demoOpener,
     TextAi? demoTextAi,
     TranscribeClient? demoTranscriber,
-  }) : roomSpeaker = roomSpeaker ?? speaker {
+    CalendarSource? calendar,
+    CalendarSource? demoCalendar,
+  })  : roomSpeaker = roomSpeaker ?? speaker,
+        // ignore: prefer_initializing_formals
+        _calendar = calendar,
+        _demoCalendar = demoCalendar ?? DemoCalendarSource() {
     final key = keyProviderFor(keys);
     _opener = opener ?? (cfg) async => TranslateSession.open(apiKey: await key(), config: cfg);
     _textAi = TextAi(
@@ -70,6 +76,13 @@ class AppServices {
   SessionOpener get opener => demoMode ? _demoOpener : _opener;
   TextAi get textAi => demoMode ? _demoTextAi : _textAi;
   TranscribeClient get transcriber => demoMode ? _demoTranscriber : _transcriber;
+
+  final CalendarSource? _calendar;
+  final CalendarSource _demoCalendar;
+
+  /// "Sắp tới": the phone's calendar, or sample meetings in demo mode.
+  /// Null when the platform has none (tests).
+  CalendarSource? get calendar => demoMode ? _demoCalendar : _calendar;
 
   /// Records billed live-translation audio; nothing is billed in demo mode.
   void Function(Duration)? get onAudioBilled => demoMode ? null : settings.addTranslateAudio;

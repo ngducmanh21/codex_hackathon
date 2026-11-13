@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'app/services.dart';
+import 'calendar/calendar_source.dart';
 import 'platform/device_audio.dart';
 import 'storage/key_store.dart';
 import 'storage/library_store.dart';
@@ -24,6 +25,7 @@ Future<void> main() async {
     speaker: PcmSpeaker(),
     roomSpeaker: AndroidRoomSpeaker(),
     awake: const WakelockAwake(),
+    calendar: DeviceCalendarSource(),
   );
   runApp(ScoaiVoiceApp(services: services));
 }

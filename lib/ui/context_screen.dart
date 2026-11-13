@@ -86,35 +86,42 @@ class _ContextScreenState extends State<ContextScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(
-          leading: IconButton(tooltip: 'Đóng', icon: const Icon(Icons.close), onPressed: () => Navigator.of(context).pop()),
-          title: const Text('Ngữ cảnh'),
+    appBar: AppBar(
+      leading: IconButton(tooltip: 'Đóng', icon: const Icon(Icons.close), onPressed: () => Navigator.of(context).pop()),
+      title: const Text('Ngữ cảnh'),
+    ),
+    body: ListView(
+      padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
+      children: [
+        Text(
+          widget.liveNote
+              ? 'Giúp đúng tên riêng và thuật ngữ. Khi họp trực tiếp, câu có thuật ngữ được sửa lại sau khi nói xong; ngữ cảnh cũng dùng cho tóm tắt và hỏi đáp.'
+              : 'Giúp nhận dạng và dịch đúng chủ đề, tên riêng và thuật ngữ.',
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 14, height: 20 / 14),
         ),
-        body: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
-          children: [
-            Text(
-              widget.liveNote
-                  ? 'Giúp đúng tên riêng và thuật ngữ. Khi họp trực tiếp, câu có thuật ngữ được sửa lại sau khi nói xong; ngữ cảnh cũng dùng cho tóm tắt và hỏi đáp.'
-                  : 'Giúp nhận dạng và dịch đúng chủ đề, tên riêng và thuật ngữ.',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 14, height: 20 / 14),
-            ),
-            const SizedBox(height: 16),
-            SurfaceCard(
-              padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-              child: _reading
-                  ? const Row(children: [
-                      SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
-                      SizedBox(width: 12),
-                      Expanded(child: Text('Đang đọc ảnh…')),
-                    ])
-                  : Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      const Text('Lấy từ ảnh', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
-                      const SizedBox(height: 2),
-                      const Text('Báo giá, catalog, danh thiếp, slide: AI tự điền tên riêng và thuật ngữ.',
-                          style: TextStyle(fontSize: 13, color: C.inkMuted)),
-                      const SizedBox(height: 10),
-                      Row(children: [
+        const SizedBox(height: 16),
+        SurfaceCard(
+          padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+          child: _reading
+              ? const Row(
+                  children: [
+                    SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
+                    SizedBox(width: 12),
+                    Expanded(child: Text('Đang đọc ảnh…')),
+                  ],
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Lấy từ ảnh', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 2),
+                    const Text(
+                      'Báo giá, catalog, danh thiếp, slide: AI tự điền tên riêng và thuật ngữ.',
+                      style: TextStyle(fontSize: 13, color: C.inkMuted),
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
                         OutlinePill(
                           key: const Key('context-camera'),
                           label: 'Chụp ảnh',
@@ -130,92 +137,116 @@ class _ContextScreenState extends State<ContextScreen> {
                           height: 40,
                           onPressed: () => _fromImage(ImageSource.gallery),
                         ),
-                      ]),
-                    ]),
-            ),
-            const SizedBox(height: 22),
-            const SectionLabel('Chủ đề'),
-            TextField(
-              controller: _topic,
-              minLines: 2,
-              maxLines: 4,
-              decoration: const InputDecoration(hintText: 'Ví dụ: đàm phán đơn hàng linh kiện, giá FOB'),
-            ),
-            const SizedBox(height: 22),
-            const SectionLabel('Thuật ngữ và tên riêng'),
-            if (_terms.isNotEmpty)
-              SurfaceCard(
-                padding: EdgeInsets.zero,
-                child: Column(children: [
-                  for (var i = 0; i < _terms.length; i++)
-                    Container(
-                      decoration: BoxDecoration(
-                        border: i == _terms.length - 1 ? null : const Border(bottom: BorderSide(color: C.hairline)),
-                      ),
-                      padding: const EdgeInsets.fromLTRB(14, 4, 4, 4),
-                      child: Row(children: [
+                      ],
+                    ),
+                  ],
+                ),
+        ),
+        const SizedBox(height: 22),
+        const SectionLabel('Chủ đề'),
+        TextField(
+          controller: _topic,
+          minLines: 2,
+          maxLines: 4,
+          decoration: const InputDecoration(hintText: 'Ví dụ: đàm phán đơn hàng linh kiện, giá FOB'),
+        ),
+        const SizedBox(height: 22),
+        const SectionLabel('Thuật ngữ và tên riêng'),
+        if (_terms.isNotEmpty)
+          SurfaceCard(
+            padding: EdgeInsets.zero,
+            child: Column(
+              children: [
+                for (var i = 0; i < _terms.length; i++)
+                  Container(
+                    decoration: BoxDecoration(
+                      border: i == _terms.length - 1 ? null : const Border(bottom: BorderSide(color: C.hairline)),
+                    ),
+                    padding: const EdgeInsets.fromLTRB(14, 4, 4, 4),
+                    child: Row(
+                      children: [
                         Expanded(
-                          child: Text.rich(TextSpan(children: [
-                            TextSpan(text: _terms[i].source, style: const TextStyle(fontWeight: FontWeight.w600)),
-                            const TextSpan(text: '  →  ', style: TextStyle(color: C.inkMuted)),
-                            TextSpan(text: _terms[i].target),
-                          ])),
+                          child: Text.rich(
+                            TextSpan(
+                              children: [
+                                TextSpan(
+                                  text: _terms[i].source,
+                                  style: const TextStyle(fontWeight: FontWeight.w600),
+                                ),
+                                const TextSpan(
+                                  text: '  →  ',
+                                  style: TextStyle(color: C.inkMuted),
+                                ),
+                                TextSpan(text: _terms[i].target),
+                              ],
+                            ),
+                          ),
                         ),
                         IconButton(
                           tooltip: 'Xoá ${_terms[i].source}',
                           icon: const Icon(Icons.close, size: 18, color: C.inkMuted),
                           onPressed: () => setState(() => _terms.removeAt(i)),
                         ),
-                      ]),
+                      ],
                     ),
-                ]),
-              ),
-            const SizedBox(height: 10),
-            Row(children: [
-              Expanded(
-                child: TextField(
-                  controller: _src,
-                  decoration: const InputDecoration(hintText: 'Từ gốc'),
-                  textInputAction: TextInputAction.next,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: TextField(
-                  controller: _dst,
-                  decoration: const InputDecoration(hintText: 'Dịch là'),
-                  onSubmitted: (_) => _add(),
-                ),
-              ),
-              const SizedBox(width: 8),
-              IconButton.filled(
-                tooltip: 'Thêm thuật ngữ',
-                style: IconButton.styleFrom(backgroundColor: C.brand, fixedSize: const Size(48, 48)),
-                onPressed: _add,
-                icon: const Icon(Icons.add, color: Colors.white),
-              ),
-            ]),
-          ],
-        ),
-        bottomNavigationBar: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
-            child: SizedBox(
-              height: 56,
-              child: FilledButton(
-                style: FilledButton.styleFrom(backgroundColor: C.brand, shape: const StadiumBorder()),
-                onPressed: _save,
-                child: const Text('Lưu ngữ cảnh', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
-              ),
+                  ),
+              ],
             ),
           ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: _src,
+                decoration: const InputDecoration(hintText: 'Từ gốc'),
+                textInputAction: TextInputAction.next,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: TextField(
+                controller: _dst,
+                decoration: const InputDecoration(hintText: 'Dịch là'),
+                onSubmitted: (_) => _add(),
+              ),
+            ),
+            const SizedBox(width: 8),
+            IconButton.filled(
+              tooltip: 'Thêm thuật ngữ',
+              style: IconButton.styleFrom(backgroundColor: C.brand, fixedSize: const Size(48, 48)),
+              onPressed: _add,
+              icon: const Icon(Icons.add, color: Colors.white),
+            ),
+          ],
         ),
-      );
+      ],
+    ),
+    bottomNavigationBar: SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+        child: SizedBox(
+          height: 56,
+          child: FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: C.brand, shape: const StadiumBorder()),
+            onPressed: _save,
+            child: const Text('Lưu ngữ cảnh', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
+          ),
+        ),
+      ),
+    ),
+  );
 }
 
 /// The small card that shows a context and opens the editor.
 class ContextCard extends StatelessWidget {
-  const ContextCard({super.key, required this.value, required this.onChanged, this.liveNote = false, this.target = Lang.vi});
+  const ContextCard({
+    super.key,
+    required this.value,
+    required this.onChanged,
+    this.liveNote = false,
+    this.target = Lang.vi,
+  });
   final MeetingContext value;
   final ValueChanged<MeetingContext> onChanged;
   final bool liveNote;
@@ -223,7 +254,9 @@ class ContextCard extends StatelessWidget {
 
   Future<void> _edit(BuildContext context) async {
     final r = await Navigator.of(context).push<MeetingContext>(
-      MaterialPageRoute(builder: (_) => ContextScreen(initial: value, liveNote: liveNote, target: target)),
+      MaterialPageRoute(
+        builder: (_) => ContextScreen(initial: value, liveNote: liveNote, target: target),
+      ),
     );
     if (r != null) onChanged(r);
   }
@@ -233,30 +266,53 @@ class ContextCard extends StatelessWidget {
     if (value.isEmpty) {
       return Align(
         alignment: Alignment.centerLeft,
-        child: OutlinePill(label: 'Thêm ngữ cảnh', icon: Icons.add, height: 40, color: C.ink, onPressed: () => _edit(context)),
+        child: OutlinePill(
+          label: 'Thêm ngữ cảnh',
+          icon: Icons.add,
+          height: 40,
+          color: C.ink,
+          onPressed: () => _edit(context),
+        ),
       );
     }
     final shown = value.terms.take(2).toList();
     return SurfaceCard(
       onTap: () => _edit(context),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(children: [
-          Text('Ngữ cảnh', style: Theme.of(context).textTheme.titleMedium),
-          const Spacer(),
-          const Text('Sửa', style: TextStyle(fontWeight: FontWeight.w600, color: C.brand)),
-        ]),
-        if (value.topic.isNotEmpty) ...[
-          const SizedBox(height: 8),
-          Text(value.topic, maxLines: 2, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 14)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text('Ngữ cảnh', style: Theme.of(context).textTheme.titleMedium),
+              const Spacer(),
+              const Text(
+                'Sửa',
+                style: TextStyle(fontWeight: FontWeight.w600, color: C.brand),
+              ),
+            ],
+          ),
+          if (value.topic.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(
+              value.topic,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 14),
+            ),
+          ],
+          if (value.terms.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: [
+                for (final t in shown) _TermChip('${t.source} → ${t.target}'),
+                if (value.terms.length > shown.length) _TermChip('+${value.terms.length - shown.length}'),
+              ],
+            ),
+          ],
         ],
-        if (value.terms.isNotEmpty) ...[
-          const SizedBox(height: 10),
-          Wrap(spacing: 6, runSpacing: 6, children: [
-            for (final t in shown) _TermChip('${t.source} → ${t.target}'),
-            if (value.terms.length > shown.length) _TermChip('+${value.terms.length - shown.length}'),
-          ]),
-        ],
-      ]),
+      ),
     );
   }
 }
@@ -266,8 +322,8 @@ class _TermChip extends StatelessWidget {
   final String text;
   @override
   Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-        decoration: BoxDecoration(color: C.sunken, borderRadius: BorderRadius.circular(8)),
-        child: Text(text, style: const TextStyle(fontSize: 13)),
-      );
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+    decoration: BoxDecoration(color: C.sunken, borderRadius: BorderRadius.circular(8)),
+    child: Text(text, style: const TextStyle(fontSize: 13)),
+  );
 }
