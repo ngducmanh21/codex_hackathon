@@ -69,7 +69,7 @@ class _MeetingScreenState extends State<MeetingScreen> {
           readAloud: widget.readAloud,
           textAi: s.textAi,
           awake: s.awake,
-          onAudioBilled: s.settings.addTranslateAudio,
+          onAudioBilled: s.onAudioBilled,
         );
     c.addListener(_onChange);
     _scroll.addListener(_onScroll);
@@ -350,6 +350,11 @@ class _MeetingScreenState extends State<MeetingScreen> {
         body: Column(
           children: [
             if (c.notice != null) NoticeBar(text: c.notice!),
+            if (Services.of(context).demoMode)
+              const NoticeBar(
+                key: Key('demo-notice'),
+                text: 'Chế độ thử: câu nói là kịch bản mẫu; micro và loa vẫn chạy thật.',
+              ),
             if (all.isNotEmpty)
               CaptionControls(
                 view: _view,

@@ -155,10 +155,12 @@ class SurfaceCard extends StatelessWidget {
 
 /// A banner for problems (lost connection, missing key…).
 class NoticeBar extends StatelessWidget {
-  const NoticeBar({super.key, required this.text, this.action, this.onAction});
+  const NoticeBar({super.key, required this.text, this.action, this.onAction, this.action2, this.onAction2});
   final String text;
   final String? action;
   final VoidCallback? onAction;
+  final String? action2;
+  final VoidCallback? onAction2;
 
   @override
   Widget build(BuildContext context) => Container(
@@ -167,6 +169,7 @@ class NoticeBar extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(20, 10, 8, 10),
         child: Row(children: [
           Expanded(child: Text(text, style: const TextStyle(fontSize: 14, color: C.warning))),
+          if (action2 != null) TextButton(onPressed: onAction2, child: Text(action2!)),
           if (action != null) TextButton(onPressed: onAction, child: Text(action!)),
         ]),
       );

@@ -137,6 +137,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ]),
           ),
           const SizedBox(height: 26),
+          const SectionLabel('Chế độ thử'),
+          SurfaceCard(
+            padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
+            child: Row(children: [
+              const Expanded(
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text('Dùng dữ liệu mẫu', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                  SizedBox(height: 2),
+                  Text(
+                    'Thử mọi màn hình mà không cần khoá OpenAI, không tốn tiền. Micro và loa vẫn chạy thật; '
+                    'câu nói, bản dịch, tóm tắt và hỏi đáp là kịch bản mẫu. Thư viện có thêm hai mục [Mẫu].',
+                    style: TextStyle(fontSize: 13, color: C.inkMuted),
+                  ),
+                ]),
+              ),
+              Switch(
+                key: const Key('demo-switch'),
+                value: settings.demoMode,
+                onChanged: (v) => Services.of(context).setDemoMode(v),
+              ),
+            ]),
+          ),
+          const SizedBox(height: 26),
           const SectionLabel('Chất lượng dịch tệp và thuật ngữ'),
           Row(children: [
             Expanded(

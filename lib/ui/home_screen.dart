@@ -98,11 +98,20 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       body: Column(children: [
-        if (!_hasKey && !_loading)
+        if (_services?.demoMode ?? false)
           NoticeBar(
-            text: 'Chưa có khoá OpenAI. Thêm khoá để bắt đầu.',
+            key: const Key('demo-banner'),
+            text: 'Chế độ thử: dữ liệu mẫu, không gọi OpenAI.',
+            action: 'Tắt',
+            onAction: () => _services!.setDemoMode(false),
+          )
+        else if (!_hasKey && !_loading)
+          NoticeBar(
+            text: 'Chưa có khoá OpenAI.',
             action: 'Thêm khoá',
             onAction: () => _open(const SettingsScreen()),
+            action2: 'Dùng thử',
+            onAction2: () => _services!.setDemoMode(true),
           ),
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),

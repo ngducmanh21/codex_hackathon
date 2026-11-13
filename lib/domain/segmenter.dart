@@ -25,8 +25,11 @@ bool _isCloser(String ch) => '"\'”’)）」』'.contains(ch);
       }
       final cjk = '。？！'.contains(ch);
       final atEnd = end >= text.length;
-      final followedBySpace = !atEnd && RegExp(r'\s').hasMatch(text[end]);
-      if (cjk || followedBySpace) {
+      final next = atEnd ? '' : text[end];
+      final followedBySpace = !atEnd && RegExp(r'\s').hasMatch(next);
+      // Streamed deltas may join sentences without a space ("nhé.Mọi").
+      final followedByCapital = !atEnd && next != next.toLowerCase() && next == next.toUpperCase();
+      if (cjk || followedBySpace || followedByCapital) {
         final s = text.substring(start, end).trim();
         if (s.isNotEmpty) out.add(s);
         start = end;

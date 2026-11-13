@@ -13,6 +13,7 @@ Giao diện theo SCOAI Voice (bản dịch offline). Khác ở chỗ bản này 
 - [Tính năng](#tính-năng)
 - [Cài đặt nhanh](#cài-đặt-nhanh)
 - [Cách dùng](#cách-dùng)
+- [Chế độ thử (không cần khoá)](#chế-độ-thử-không-cần-khoá)
 - [Model OpenAI và chi phí](#model-openai-và-chi-phí)
 - [Khoá API và quyền riêng tư](#khoá-api-và-quyền-riêng-tư)
 - [Build từ mã nguồn](#build-từ-mã-nguồn)
@@ -103,6 +104,16 @@ SCOAI Voice giải quyết cả ba bằng AI:
 5. Không hiểu một câu: chạm vào câu đó để xem **Giải thích**. Cần tra lại nội dung: bấm icon **Hỏi nhanh**.
 6. Bấm **Hoàn tất**. Cuộc họp được lưu và tự tóm tắt. Bấm nút chia sẻ để gửi biên bản.
 
+## Chế độ thử (không cần khoá)
+
+Dùng để thử mọi màn hình trên điện thoại thật mà không cần khoá OpenAI và không tốn tiền.
+- **Cách bật:** Cài đặt › **Chế độ thử**, hoặc bấm **Dùng thử** trên banner ở Trang chủ khi chưa có khoá.
+- **Cuộc họp:** micro và loa vẫn chạy thật, nhưng phụ đề là một kịch bản họp mẫu với nhà cung cấp, gồm câu tiếng Trung, tiếng Anh và một câu tiếng Việt. Kịch bản có đủ bản dịch, và mỗi câu dịch kèm một tiếng bíp ngắn để thử nút Đọc to.
+- **Phát biểu:** bấm Phát biểu, nói khoảng một giây là có câu trả lời mẫu kèm một tiếng bíp dài. Cắm tai nghe để kiểm tra tiếng có ra loa ngoài không.
+- **Hỏi nhanh, Giải thích, Tóm tắt, Lấy ngữ cảnh từ ảnh, Tải âm thanh lên** trả kết quả mẫu.
+- **Thư viện** có thêm hai mục `[Mẫu]`: một cuộc họp đã có tóm tắt, hỏi đáp và câu đánh dấu, và một tệp tải lên chưa tóm tắt. Tắt Chế độ thử thì hai mục này tự xoá.
+- Phần mẫu nằm ở `lib/demo/`. Nó trả lời theo đúng định dạng của OpenAI, nên code gọi API, ghép câu và xử lý kết quả của app đều chạy thật. Chế độ thử không tính vào chi phí ước tính.
+
 ## Model OpenAI và chi phí
 
 Tên model và giá theo tài liệu của OpenAI ngày 13/11/2026.
@@ -162,6 +173,7 @@ lib/
                meeting_controller (cuộc họp, Phát biểu, Hỏi nhanh), live_turn, audio_ports
   platform/    device_audio (micro điện thoại, loa, loa phòng, giữ màn hình sáng)
   storage/     library_store (JSON), key_store (Keystore), settings_store (cài đặt + chi phí)
+  demo/        Chế độ thử: phiên dịch theo kịch bản, AI văn bản mẫu, mục Thư viện mẫu
   share/       minutes (văn bản biên bản để chia sẻ)
   ui/          home, meeting_setup, meeting, context, upload, saved, settings,
                captions (phụ đề), sheets (Giải thích, Hỏi nhanh), logo, theme
@@ -200,7 +212,7 @@ flutter analyze
 flutter test
 ```
 
-69 test, chạy hoàn toàn bằng WebSocket và HTTP giả, không gọi OpenAI thật:
+75 test, chạy hoàn toàn bằng WebSocket và HTTP giả, không gọi OpenAI thật:
 - `test/openai/`:
   - gói tin `session.update`;
   - âm thanh cắt khúc 200 ms dạng base64;
@@ -219,6 +231,7 @@ flutter test
   - đổi ngôn ngữ, sửa thuật ngữ;
   - Phát biểu (phiên riêng, ra loa phòng, phiên chính chỉ nhận im lặng);
   - Hỏi nhanh.
+- `test/demo/`: Chế độ thử (kịch bản họp qua client thật, Phát biểu ra loa phòng, AI văn bản mẫu, bật/tắt dữ liệu mẫu).
 - `test/storage/`: Thư viện JSON, chặn id không an toàn, tính chi phí.
 - `test/ui/`: màn họp (phụ đề, Cả hai/Gốc/Dịch, "Đang dịch…", đánh dấu, loa, lọc, Phát biểu, viên ngôn ngữ).
 

@@ -12,6 +12,12 @@ void main() {
       expect(cutSentences('Done.').sentences, isEmpty, reason: 'more text may follow');
     });
 
+    test('a full stop followed straight by a capital letter ends a sentence', () {
+      final r = cutSentences('bắt đầu nhé.Mọi người. Ok');
+      expect(r.sentences, ['bắt đầu nhé.', 'Mọi người.']);
+      expect(cutSentences('Giá 2.35 USD').sentences, isEmpty);
+    });
+
     test('CJK punctuation ends a sentence at once', () {
       final r = cutSentences('这次的样品看过了吧？我们可以降价。还有');
       expect(r.sentences, ['这次的样品看过了吧？', '我们可以降价。']);

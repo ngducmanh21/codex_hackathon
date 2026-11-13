@@ -71,6 +71,9 @@ class SettingsStore extends ChangeNotifier {
   Quality quality = Quality.fast;
   Lang meetingTarget = Lang.vi;
   bool meetingReadAloud = false;
+
+  /// "Chế độ thử": sample AI instead of OpenAI (see `AppServices`).
+  bool demoMode = false;
   final Map<String, MonthUsage> _usage = {};
 
   String get translationModel => quality == Quality.fast ? fastTextModel : qualityTextModel;
@@ -86,6 +89,7 @@ class SettingsStore extends ChangeNotifier {
       quality = j['quality'] == 'careful' ? Quality.careful : Quality.fast;
       meetingTarget = Lang.fromCode(j['meeting_target'] as String?) ?? Lang.vi;
       meetingReadAloud = j['meeting_read_aloud'] == true;
+      demoMode = j['demo_mode'] == true;
       (j['usage'] as Map? ?? const {}).forEach((k, v) {
         _usage[k as String] = MonthUsage.fromJson((v as Map).cast<String, Object?>());
       });
@@ -106,6 +110,7 @@ class SettingsStore extends ChangeNotifier {
       'quality': quality.name,
       'meeting_target': meetingTarget.code,
       'meeting_read_aloud': meetingReadAloud,
+      'demo_mode': demoMode,
       'usage': {for (final e in _usage.entries) e.key: e.value.toJson()},
     }));
     await tmp.rename(file.path);
