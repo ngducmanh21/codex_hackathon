@@ -61,7 +61,6 @@ class _MeetingScreenState extends State<MeetingScreen> {
           opener: s.opener,
           mic: s.newMic(),
           speaker: s.speaker,
-          roomSpeaker: s.roomSpeaker,
           store: s.library,
           target: widget.target,
           title: widget.title,
@@ -198,23 +197,7 @@ class _MeetingScreenState extends State<MeetingScreen> {
                     onChanged: c.state == LiveState.finished ? null : c.setTarget,
                   ),
                   const SizedBox(height: 20),
-                  const SectionLabel('Phát biểu bằng · mọi người nghe'),
-                  PillChoices<Lang?>(
-                    key: const Key('lang-speak'),
-                    values: [
-                      null,
-                      for (final l in Lang.values)
-                        if (l != c.target) l,
-                    ],
-                    selected: c.replyLangChoice,
-                    label: (l) => l?.viTitle ?? 'Tự động (${c.replyLang.short})',
-                    onChanged: c.setReplyLang,
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Tự động: ngôn ngữ nghe thấy nhiều nhất gần đây.',
-                    style: TextStyle(fontSize: 13, color: C.inkMuted),
-                  ),
+                  const SectionLabel('Chỉ hiện câu nói bằng'),
                   const SizedBox(height: 20),
                   const SectionLabel('Chỉ hiện câu nói bằng'),
                   PillChoices<Lang?>(
@@ -334,13 +317,6 @@ class _MeetingScreenState extends State<MeetingScreen> {
           title: Align(alignment: Alignment.centerLeft, child: _status()),
           actions: [
             RoundIconButton(
-              key: const Key('quick-ask'),
-              icon: Icons.contact_support_outlined,
-              tooltip: 'Hỏi nhanh về cuộc họp',
-              onPressed: c.textAi == null ? null : () => showAskSheet(context, c),
-            ),
-            const SizedBox(width: 8),
-            RoundIconButton(
               key: const Key('read-aloud'),
               icon: c.readAloud ? Icons.volume_up_rounded : Icons.volume_off_rounded,
               tooltip: c.readAloud ? 'Đọc to bản dịch: đang bật' : 'Đọc to bản dịch: đang tắt',
@@ -368,7 +344,6 @@ class _MeetingScreenState extends State<MeetingScreen> {
                 children: [
                   _LangPill(
                     target: c.target,
-                    speak: c.replyLang,
                     filter: _spoken,
                     onPressed: state == LiveState.finished ? null : _pickLanguages,
                   ),
@@ -436,7 +411,6 @@ class _MeetingScreenState extends State<MeetingScreen> {
                 ],
               ),
             ),
-            if (c.reply != null) _ReplyBanner(c: c),
             Padding(
               padding: EdgeInsets.fromLTRB(16, 8, 16, 12 + MediaQuery.paddingOf(context).bottom),
               child: Row(
@@ -458,12 +432,11 @@ class _MeetingScreenState extends State<MeetingScreen> {
                     ),
                   ),
                   const SizedBox(width: 10),
-                  _ReplyButton(
-                    replying: c.replying,
-                    lang: c.replyLang,
-                    onPressed: state != LiveState.live || (c.reply != null && !c.replying)
-                        ? null
-                        : (c.replying ? c.endReply : c.startReply),
+                  _DockAction(
+                    buttonKey: const Key('quick-ask'),
+                    icon: Icons.auto_awesome,
+                    label: 'Ask',
+                    onPressed: c.textAi == null ? null : () => showAskSheet(context, c),
                   ),
                 ],
               ),
@@ -475,126 +448,62 @@ class _MeetingScreenState extends State<MeetingScreen> {
   }
 }
 
-/// "Phát biểu": the user speaks in their language. Tap to start, tap again
-/// when done; the phone then says the translation aloud to the room.
-class _ReplyButton extends StatelessWidget {
-  const _ReplyButton({required this.replying, required this.lang, required this.onPressed});
-  final bool replying;
-  final Lang lang;
+/// "Hỏi đáp" beside the capsule: an outlined pill with a label.
+class _DockAction extends StatelessWidget {
+  const _DockAction({required this.buttonKey, required this.icon, required this.label, required this.onPressed});
+
+  final Key buttonKey;
+  final IconData icon;
+  final String label;
   final VoidCallback? onPressed;
 
   @override
-  Widget build(BuildContext context) => Semantics(
-    button: true,
-    label: replying ? 'Xong, phát bằng ${lang.viName}' : 'Phát biểu bằng ${lang.viName}',
-    excludeSemantics: true,
-    child: Material(
-      key: const Key('reply'),
-      color: replying ? C.accent : C.surface,
-      shape: CircleBorder(side: BorderSide(color: replying ? C.accent : C.brand, width: 1.5)),
-      child: InkWell(
-        customBorder: const CircleBorder(),
-        onTap: onPressed,
-        child: Opacity(
-          opacity: onPressed == null ? 0.45 : 1,
-          child: SizedBox(
-            width: 64,
-            height: 64,
-            child: Padding(
-              padding: const EdgeInsets.all(8),
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      replying ? Icons.send_rounded : Icons.record_voice_over_outlined,
-                      color: replying ? Colors.white : C.brand,
-                      size: 20,
-                    ),
-                    const SizedBox(height: 1),
-                    Text(
-                      replying ? 'Xong' : 'Phát biểu',
-                      textScaler: TextScaler.noScaling,
-                      style: TextStyle(
-                        fontSize: 12,
-                        height: 14 / 12,
-                        fontWeight: FontWeight.w700,
-                        color: replying ? Colors.white : C.brand,
-                      ),
-                    ),
-                  ],
-                ),
+  Widget build(BuildContext context) {
+    const fg = C.brand;
+    return Semantics(
+      button: true,
+      enabled: onPressed != null,
+      child: Material(
+        key: buttonKey,
+        color: C.surface,
+        shape: const StadiumBorder(side: BorderSide(color: C.brand, width: 1.4)),
+        child: InkWell(
+          customBorder: const StadiumBorder(),
+          onTap: onPressed,
+          child: Opacity(
+            opacity: onPressed == null ? 0.42 : 1,
+            child: Container(
+              height: 56,
+              padding: const EdgeInsets.symmetric(horizontal: 18),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(icon, size: 19, color: fg),
+                  const SizedBox(width: 8),
+                  Text(
+                    label,
+                    maxLines: 1,
+                    textScaler: TextScaler.noScaling,
+                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: fg),
+                  ),
+                ],
               ),
             ),
           ),
         ),
       ),
-    ),
-  );
-}
-
-/// What the user is saying and its translation, while they reply.
-class _ReplyBanner extends StatelessWidget {
-  const _ReplyBanner({required this.c});
-  final MeetingController c;
-
-  @override
-  Widget build(BuildContext context) {
-    final r = c.reply!;
-    return Container(
-      key: const Key('reply-banner'),
-      width: double.infinity,
-      margin: const EdgeInsets.fromLTRB(16, 4, 16, 0),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: C.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: C.accent, width: 1.5),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            r.listening ? 'Bạn đang phát biểu → ${c.replyLang.viName}' : 'Đang phát bằng ${c.replyLang.viName}…',
-            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: C.accent),
-          ),
-          if (r.source.trim().isNotEmpty) ...[
-            const SizedBox(height: 6),
-            Text(
-              r.source.trim(),
-              style: const TextStyle(fontSize: 15, height: 22 / 15, color: C.inkMuted),
-            ),
-          ],
-          if (r.translation.trim().isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(
-              r.translation.trim(),
-              style: const TextStyle(fontSize: 20, height: 30 / 20, color: C.ink),
-            ),
-          ],
-          if (r.source.trim().isEmpty && r.listening)
-            Padding(
-              padding: EdgeInsets.only(top: 6),
-              child: Text(
-                'Nói ${c.target.viName}, xong bấm Xong để phát cho mọi người nghe.',
-                style: const TextStyle(fontSize: 14, color: C.inkMuted),
-              ),
-            ),
-        ],
-      ),
     );
   }
 }
 
-/// "Việt ⇄ Trung" in the top bar: captions in the first, "Phát biểu" in the
-/// second. Opens the language sheet.
 const _pillText = TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: C.ink);
 
+/// "Việt ▾" in the top row: the language captions are translated into, and
+/// the language filter when one is set. Opens the language sheet.
 class _LangPill extends StatelessWidget {
-  const _LangPill({required this.target, required this.speak, required this.onPressed, this.filter});
+  const _LangPill({required this.target, required this.onPressed, this.filter});
   final Lang target;
-  final Lang speak;
   final Lang? filter;
   final VoidCallback? onPressed;
 
@@ -602,7 +511,7 @@ class _LangPill extends StatelessWidget {
   Widget build(BuildContext context) => Semantics(
     button: true,
     label:
-        'Ngôn ngữ: phụ đề ${target.viName}, phát biểu ${speak.viName}'
+        'Dịch sang ${target.viName}'
         '${filter == null ? '' : ', chỉ hiện câu ${filter!.viName}'}',
     excludeSemantics: true,
     child: Material(
@@ -618,12 +527,9 @@ class _LangPill extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
+              const Icon(Icons.translate_rounded, size: 16, color: C.inkMuted),
+              const SizedBox(width: 6),
               Text(target.short, style: _pillText),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 4),
-                child: Icon(Icons.swap_horiz_rounded, size: 16, color: C.inkMuted),
-              ),
-              Text(speak.short, style: _pillText),
               if (filter != null) ...[
                 const SizedBox(width: 8),
                 Container(

@@ -76,23 +76,6 @@ class PcmSpeaker implements PcmSink {
   }
 }
 
-/// "Phát biểu" speech on the phone's own loudspeaker, even with headphones
-/// in (see `RoomSpeaker.kt`).
-class AndroidRoomSpeaker implements PcmSink {
-  static const _channel = MethodChannel('scoai.voice/room_speaker');
-
-  /// How the last chunk was routed: "speaker", "alarm" or "default".
-  String? lastRoute;
-
-  @override
-  Future<void> play(Uint8List pcm, int sampleRate) async {
-    lastRoute = await _channel.invokeMethod<String>('play', {'pcm': pcm, 'rate': sampleRate});
-  }
-
-  @override
-  Future<void> stop() => _channel.invokeMethod<void>('stop');
-}
-
 class WakelockAwake implements ScreenAwake {
   const WakelockAwake();
   @override

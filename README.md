@@ -1,7 +1,6 @@
 # SCOAI Voice (bản OpenAI)
 
 **Phiên dịch cuộc họp trực tiếp trên điện thoại Android: Việt · Trung · Anh, theo mọi chiều.**
-Mỗi câu hiện hai dòng: lời gốc và bản dịch. Bạn có thể phát biểu lại bằng tiếng của đối phương. Họp xong có tóm tắt, hỏi đáp và biên bản để gửi Zalo.
 
 > *English summary: a live meeting interpreter for Android (Vietnamese, Chinese, English). Bilingual captions per sentence, a "speak back" button that voices your reply in the other side's language through the loudspeaker, quick questions during the meeting, sentence explanations, photo-to-glossary context, summaries, Q&A and shareable minutes. All AI runs through the OpenAI API (`gpt-realtime-translate`, `gpt-transcribe`, `gpt-6-luna`, `gpt-6.1-terra`).*
 
@@ -32,7 +31,6 @@ Thuê phiên dịch thì tốn kém và không phải lúc nào cũng có. Gõ t
 
 SCOAI Voice giải quyết cả ba bằng AI:
 - dịch trực tiếp từng câu;
-- phát biểu lại bằng giọng nói tiếng của đối phương;
 - tự tóm tắt và trả lời câu hỏi về nội dung cuộc họp.
 
 ## Tính năng
@@ -45,14 +43,7 @@ SCOAI Voice giải quyết cả ba bằng AI:
 - **Đọc to bản dịch:** bật/tắt bằng icon loa ở góc trên. Nên dùng tai nghe.
 - **Viên ngôn ngữ ở góc trên** (ví dụ "Việt ⇄ Trung") chỉnh hai thứ:
   - phụ đề dịch sang tiếng gì;
-  - phát biểu bằng tiếng gì (mặc định "Tự động": ngôn ngữ nghe thấy nhiều nhất gần đây).
 - **Tạm dừng | Hoàn tất:** viên cam ở thanh dưới. Hoàn tất thì lưu vào Thư viện và tự tóm tắt.
-
-### Phát biểu
-- Bấm nút tròn **"Phát biểu"**, nói tiếng Việt, xong bấm **"Xong"**. App dịch sang tiếng của phía bên kia và **đọc to ra loa ngoài của điện thoại**, kể cả khi bạn đang đeo tai nghe.
-- Bản dịch đọc riêng cho bạn vẫn vào tai nghe.
-- Câu bạn phát biểu hiện trong phụ đề với nhãn cam "Bạn".
-- Trong lúc bạn nói và lúc máy đang đọc, phiên dịch chính chỉ nhận im lặng, nên câu đó không bị dịch hai lần.
 
 ### Hiểu sâu hơn
 - **Hỏi nhanh** (icon hội thoại ở góc trên): hỏi ngay trong cuộc họp, ví dụ "Họ vừa nói gì về giá?", "Còn chờ mình trả lời gì?". Câu trả lời kèm mốc giờ và được lưu cùng cuộc họp.
@@ -100,16 +91,14 @@ SCOAI Voice giải quyết cả ba bằng AI:
    - có thể **Thêm ngữ cảnh** (gõ tay hoặc chụp ảnh);
    - bật **Đọc to** nếu đeo tai nghe.
 3. Bấm **Bắt đầu ghi âm**. Người khác nói tiếng gì cũng được, app tự nhận ra.
-4. Muốn đáp lại: bấm **Phát biểu**, nói tiếng Việt, bấm **Xong**. Điện thoại đọc câu đó bằng tiếng của đối phương.
-5. Không hiểu một câu: chạm vào câu đó để xem **Giải thích**. Cần tra lại nội dung: bấm icon **Hỏi nhanh**.
-6. Bấm **Hoàn tất**. Cuộc họp được lưu và tự tóm tắt. Bấm nút chia sẻ để gửi biên bản.
+4. Không hiểu một câu: chạm vào câu đó để xem **Giải thích**. Cần tra lại nội dung đã nói: bấm **Ask**.
+5. Bấm **Stop**. Cuộc họp được lưu và tự tóm tắt. Bấm nút **Chia sẻ** để gửi biên bản.
 
 ## Chế độ thử (không cần khoá)
 
 Dùng để thử mọi màn hình trên điện thoại thật mà không cần khoá OpenAI và không tốn tiền.
 - **Cách bật:** Cài đặt › **Chế độ thử**, hoặc bấm **Dùng thử** trên banner ở Trang chủ khi chưa có khoá.
 - **Cuộc họp:** micro và loa vẫn chạy thật, nhưng phụ đề là một kịch bản họp mẫu với nhà cung cấp, gồm câu tiếng Trung, tiếng Anh và một câu tiếng Việt. Kịch bản có đủ bản dịch, và mỗi câu dịch kèm một tiếng bíp ngắn để thử nút Đọc to.
-- **Phát biểu:** bấm Phát biểu, nói khoảng một giây là có câu trả lời mẫu kèm một tiếng bíp dài. Cắm tai nghe để kiểm tra tiếng có ra loa ngoài không.
 - **Hỏi nhanh, Giải thích, Tóm tắt, Lấy ngữ cảnh từ ảnh, Tải âm thanh lên** trả kết quả mẫu.
 - **Thư viện** có thêm hai mục `[Mẫu]`: một cuộc họp đã có tóm tắt, hỏi đáp và câu đánh dấu, và một tệp tải lên chưa tóm tắt. Tắt Chế độ thử thì hai mục này tự xoá.
 - Phần mẫu nằm ở `lib/demo/`. Nó trả lời theo đúng định dạng của OpenAI, nên code gọi API, ghép câu và xử lý kết quả của app đều chạy thật. Chế độ thử không tính vào chi phí ước tính.
@@ -121,7 +110,6 @@ Tên model và giá theo tài liệu của OpenAI ngày 13/11/2026.
 | Việc | Model / endpoint | Giá niêm yết |
 |---|---|---|
 | Dịch trực tiếp | `gpt-realtime-translate`, WebSocket `/v1/realtime/translations` | 0,034 USD/phút âm thanh |
-| Phát biểu | `gpt-realtime-translate`, phiên riêng, chỉ mở khi bạn nói | 0,034 USD/phút lúc mở |
 | Phụ đề lời gốc | `gpt-realtime-whisper` (đặt trong phiên dịch) | chưa rõ có tính riêng không |
 | Nhận dạng tệp | `gpt-transcribe`, `/v1/audio/transcriptions` | 0,0045 USD/phút |
 | Dịch tệp, sửa thuật ngữ | `gpt-6-luna` (Nhanh) hoặc `gpt-6.1-terra` (Kỹ hơn), Responses API | 0,10/0,50 hoặc 1/5 USD cho 1 triệu token vào/ra |
@@ -130,7 +118,6 @@ Tên model và giá theo tài liệu của OpenAI ngày 13/11/2026.
 **Ước tính một giờ họp:**
 - Dịch trực tiếp khoảng **2,04 USD**.
 - Tóm tắt và vài câu hỏi thêm **0,05–0,15 USD**.
-- Phát biểu tính theo số phút bạn nói.
 - Bật hay tắt đọc to không đổi giá, vì model luôn trả kèm giọng đọc.
 
 Tên model nằm trong `lib/openai/*.dart`, bảng giá dùng để ước tính nằm trong `lib/storage/settings_store.dart` (`Prices`).
@@ -170,7 +157,6 @@ lib/
   openai/      realtime_translate (WebSocket dịch trực tiếp), responses_client, text_ai
                (dịch, tóm tắt, hỏi đáp, giải thích, đọc ảnh + prompt), transcribe_client
   live/        session_pipe (micro → phiên dịch, đệm khi mất mạng, xả phiên),
-               meeting_controller (cuộc họp, Phát biểu, Hỏi nhanh), live_turn, audio_ports
   platform/    device_audio (micro điện thoại, loa, loa phòng, giữ màn hình sáng)
   storage/     library_store (JSON), key_store (Keystore), settings_store (cài đặt + chi phí)
   demo/        Chế độ thử: phiên dịch theo kịch bản, AI văn bản mẫu, mục Thư viện mẫu
@@ -178,7 +164,6 @@ lib/
   ui/          home, meeting_setup, meeting, context, upload, saved, settings,
                captions (phụ đề), sheets (Giải thích, Hỏi nhanh), logo, theme
 android/app/src/main/kotlin/com/scoai/voice/openai/
-               MainActivity (kênh "scoai.voice/room_speaker"), RoomSpeaker (phát ra loa ngoài)
 ```
 
 **Luồng của một cuộc họp:**
@@ -188,8 +173,7 @@ micro điện thoại ──► SessionPipe ──► gpt-realtime-translate (We
                                        ├─ lời gốc  ─┐
                                        ├─ bản dịch ─┴─► CaptionAssembler ──► phụ đề song ngữ
                                        └─ giọng dịch ─► tai nghe (nếu bật Đọc to)
-nút Phát biểu ──► phiên dịch thứ hai ──► giọng dịch ──► RoomSpeaker (loa ngoài)
-Hoàn tất ──► Thư viện (JSON) ──► gpt-6.1-terra: tóm tắt, hỏi đáp
+Stop ──► Thư viện (JSON) ──► gpt-6.1-terra: tóm tắt, hỏi đáp
 ```
 
 **Một số chi tiết quan trọng:**
@@ -202,7 +186,6 @@ Hoàn tất ──► Thư viện (JSON) ──► gpt-6.1-terra: tóm tắt, h�
 - **Phiên dài.** App tự chuyển sang phiên mới ở phút thứ 50, vì phiên realtime giới hạn 60 phút.
 - **Mất mạng.** App thử nối lại tối đa 3 lần và giữ tạm tối đa 15 giây âm thanh trong lúc chờ.
 - **Thuật ngữ.** Phiên dịch realtime không nhận danh sách thuật ngữ. Vì vậy câu đã xong mà có chứa thuật ngữ trong Ngữ cảnh sẽ được dịch lại bằng `gpt-6-luna` kèm danh sách thuật ngữ.
-- **Loa phòng.** `RoomSpeaker.kt` xin Android dùng loa trong của máy cho riêng luồng Phát biểu. Nếu Android vẫn đưa tiếng sang chỗ khác, từ câu sau app chuyển sang luồng chuông báo, vốn luôn phát ra loa.
 - **Micro.** Cuộc họp luôn thu bằng micro của điện thoại, không dùng micro trên tai nghe.
 
 ## Kiểm thử
@@ -212,7 +195,7 @@ flutter analyze
 flutter test
 ```
 
-75 test, chạy hoàn toàn bằng WebSocket và HTTP giả, không gọi OpenAI thật:
+68 test, chạy hoàn toàn bằng WebSocket và HTTP giả, không gọi OpenAI thật:
 - `test/openai/`:
   - gói tin `session.update`;
   - âm thanh cắt khúc 200 ms dạng base64;
@@ -229,20 +212,15 @@ flutter test
   - lưu Thư viện;
   - nối lại khi mất mạng, chuyển phiên;
   - đổi ngôn ngữ, sửa thuật ngữ;
-  - Phát biểu (phiên riêng, ra loa phòng, phiên chính chỉ nhận im lặng);
   - Hỏi nhanh.
-- `test/demo/`: Chế độ thử (kịch bản họp qua client thật, Phát biểu ra loa phòng, AI văn bản mẫu, bật/tắt dữ liệu mẫu).
 - `test/storage/`: Thư viện JSON, chặn id không an toàn, tính chi phí.
-- `test/ui/`: màn họp (phụ đề, Cả hai/Gốc/Dịch, "Đang dịch…", đánh dấu, loa, lọc, Phát biểu, viên ngôn ngữ).
 
 ## Giới hạn và việc chưa làm
 
 - **Chưa thử trên điện thoại thật với OpenAI thật.** Định dạng gói tin lấy từ tài liệu OpenAI ngày 13/11/2026.
 - **Mã ngôn ngữ:** tài liệu OpenAI chỉ có ví dụ `"es"`/`"fr"`; chưa kiểm chứng `vi`, `zh`, `en` cho `audio.output.language`.
 - **Độ trễ thực tế** và chất lượng ghép câu với giọng nói thật chưa đo.
-- **Phát biểu ra loa ngoài khi đeo tai nghe** chưa thử trên máy thật. Vài máy hoặc tai nghe Bluetooth có thể không cho tách đường âm thanh; khi đó app dùng luồng chuông báo, nên âm lượng theo mức chuông báo.
 - **Ghi nền:** chưa có foreground service, nên tắt màn hình hoặc chuyển app thì Android có thể ngắt micro. Trong lúc họp, app giữ màn hình luôn sáng.
 - **Tệp tải lên:** tối đa 25 MB, chưa tự cắt tệp dài. `gpt-transcribe` không trả mốc giờ, nên Bản ghi của tệp đánh số câu.
 - **Ngôn ngữ:** hiện có Việt, Trung, Anh. Thêm ngôn ngữ khác cần cách nhận diện ngôn ngữ cho từng câu.
 - **Chưa có:** chế độ tối, xuất file bản ghi, tìm kiếm trong bản ghi, nghe lại âm thanh gốc, bản iOS.
-- **Đã bỏ:** màn Hội thoại (hai nút "Tôi nói" / "Người kia nói"), vì trùng với Phát biểu. Mục hội thoại đã lưu từ trước vẫn mở được.

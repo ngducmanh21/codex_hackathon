@@ -39,18 +39,15 @@ void main() {
   group('scripted meeting', () {
     late FakeMic mic;
     late FakeSpeaker speaker;
-    late FakeSpeaker room;
     late MeetingController c;
 
     setUp(() {
       mic = FakeMic();
       speaker = FakeSpeaker();
-      room = FakeSpeaker();
       c = MeetingController(
         opener: demoOpener(speed: 0.03),
         mic: mic,
         speaker: speaker,
-        roomSpeaker: room,
         store: store,
         target: Lang.vi,
         readAloud: true,
@@ -72,17 +69,6 @@ void main() {
       await c.discard();
     });
 
-    test('"Phát biểu" answers after a second of speech, on the room speaker', () async {
-      await c.start();
-      await c.startReply();
-      mic.speak(1100);
-      await waitFor(() => c.reply?.translation.trim() == demoReply.zh, timeout: const Duration(seconds: 5));
-      expect(c.reply!.source.trim(), demoReply.vi);
-      await c.endReply();
-      await waitFor(() => room.played.isNotEmpty);
-      expect(c.sentences.any((s) => s.speaker == 0 && s.translation == demoReply.zh), isTrue);
-      await c.discard();
-    });
   });
 
   group('sample text AI', () {

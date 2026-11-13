@@ -26,7 +26,6 @@ class AppServices {
     required this.library,
     required this.newMic,
     required this.speaker,
-    PcmSink? roomSpeaker,
     this.awake = const NoScreenAwake(),
     SessionOpener? opener,
     ResponsesClient? responses,
@@ -36,8 +35,7 @@ class AppServices {
     TranscribeClient? demoTranscriber,
     CalendarSource? calendar,
     CalendarSource? demoCalendar,
-  })  : roomSpeaker = roomSpeaker ?? speaker,
-        // ignore: prefer_initializing_formals
+  })  : // ignore: prefer_initializing_formals
         _calendar = calendar,
         _demoCalendar = demoCalendar ?? DemoCalendarSource() {
     final key = keyProviderFor(keys);
@@ -59,9 +57,6 @@ class AppServices {
   final LibraryStore library;
   final MicSource Function() newMic;
   final PcmSink speaker;
-
-  /// The phone's loudspeaker, for "Phát biểu".
-  final PcmSink roomSpeaker;
   final ScreenAwake awake;
 
   late final SessionOpener _opener;

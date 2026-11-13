@@ -23,7 +23,6 @@ Future<void> main() async {
     library: LibraryStore(Directory('${docs.path}/library')),
     newMic: RecordMic.new,
     speaker: PcmSpeaker(),
-    roomSpeaker: AndroidRoomSpeaker(),
     awake: const WakelockAwake(),
     calendar: DeviceCalendarSource(),
   );

@@ -146,36 +146,12 @@ void main() {
       await close(tester);
     });
 
-    testWidgets('"Phát biểu" opens a reply session and shows what the user says', (tester) async {
+    testWidgets('the language pill sets the caption language', (tester) async {
       await open(tester);
-      expect(find.byKey(const Key('reply-banner')), findsNothing);
-      await tester.tap(find.byKey(const Key('reply')));
-      await tester.pump();
-      await tester.pump();
-      expect(backend.servers, hasLength(2));
-      expect(backend.configs.last.target, Lang.zh);
-      expect(find.byKey(const Key('reply-banner')), findsOneWidget);
-      backend.last.source('Giá này được.');
-      backend.last.translation('这个价格可以。');
-      await tester.pump();
-      await tester.pump();
-      expect(find.text('这个价格可以。'), findsOneWidget);
-      expect(find.textContaining('Bạn đang phát biểu → tiếng Trung'), findsOneWidget);
-      expect(find.text('Xong'), findsOneWidget);
-      await close(tester);
-    });
-
-    testWidgets('the language pill sets captions and "Phát biểu" languages', (tester) async {
-      await open(tester);
-      expect(find.text('Phát biểu'), findsOneWidget);
+      expect(find.text('Ask'), findsOneWidget);
       await tester.tap(find.byKey(const Key('languages')));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
-      expect(find.text('Tự động (Trung)'), findsOneWidget);
-      await tester.tap(find.descendant(of: find.byKey(const Key('lang-speak')), matching: find.text('Tiếng Anh')));
-      await tester.pump();
-      expect(c.replyLang, Lang.en);
-      expect(c.replyLangChoice, Lang.en);
       await tester.tap(find.descendant(of: find.byKey(const Key('lang-target')), matching: find.text('Tiếng Trung')));
       await tester.pump();
       expect(c.target, Lang.zh);

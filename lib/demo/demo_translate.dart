@@ -21,8 +21,6 @@ SessionOpener demoOpener({double speed = 1}) => (config) => TranslateSession.ope
 ///   source text chunk by chunk, then the translation into the session's
 ///   output language, then a short tone as "translated speech". A line
 ///   already in the output language gets no translation, like the model.
-/// - The "Phát biểu" session (near-field) answers with [demoReply] after
-///   about a second of audio, then a 1.2 s tone, to test the loudspeaker.
 class DemoTranslateServer implements WsLink {
   DemoTranslateServer({this.speed = 1});
 
@@ -33,10 +31,7 @@ class DemoTranslateServer implements WsLink {
   final _timers = <Timer>[];
   final _clock = Stopwatch()..start();
   Lang _target = Lang.vi;
-  bool _reply = false;
   bool _started = false;
-  bool _answered = false;
-  int _audioBytes = 0;
 
   @override
   Stream<String> get messages => _out.stream;
@@ -54,21 +49,13 @@ class DemoTranslateServer implements WsLink {
         final audio = ((e['session'] as Map?)?['audio'] as Map?) ?? const {};
         final lang = Lang.fromCode((audio['output'] as Map?)?['language'] as String?);
         if (lang != null) _target = lang;
-        final noise = ((audio['input'] as Map?)?['noise_reduction'] as Map?)?['type'];
         if (!_started) {
           _started = true;
-          _reply = noise == 'near_field';
           _emit({
             'type': 'session.created',
             'session': {'id': 'demo_${DateTime.now().millisecondsSinceEpoch}', 'type': 'translation'},
           });
-          if (!_reply) _playMeeting();
-        }
-      case 'session.input_audio_buffer.append':
-        _audioBytes += (e['audio'] as String? ?? '').length * 3 ~/ 4;
-        if (_reply && !_answered && _audioBytes >= pcmSampleRate * 2) {
-          _answered = true;
-          _playLine(demoReply, Duration.zero, tone: const Duration(milliseconds: 1200), frequency: 440);
+          _playMeeting();
         }
       case 'session.close':
         _cancel();
@@ -106,7 +93,7 @@ class DemoTranslateServer implements WsLink {
       _after(t, () => _emit({'type': 'session.output_transcript.delta', 'delta': c, 'elapsed_ms': _elapsed()}));
       t += const Duration(milliseconds: 100);
     }
-    final pcm = demoTone(length: tone, frequency: frequency, volume: _reply ? 0.35 : 0.15);
+    final pcm = demoTone(length: tone, frequency: frequency, volume: 0.15);
     const chunk = chunkBytes;
     for (var off = 0; off < pcm.length; off += chunk) {
       final end = off + chunk > pcm.length ? pcm.length : off + chunk;

@@ -10,7 +10,6 @@ import '../openai/realtime_translate.dart';
 import '../openai/text_ai.dart';
 import '../storage/library_store.dart';
 import 'audio_ports.dart';
-import 'live_turn.dart';
 import 'session_pipe.dart';
 
 enum LiveState { idle, starting, live, pausing, paused, finishing, finished, failed }
@@ -47,7 +46,6 @@ class MeetingController extends ChangeNotifier {
     required SessionOpener opener,
     required this.mic,
     required this.speaker,
-    PcmSink? roomSpeaker,
     required this.store,
     required Lang target,
     this.title = '',
@@ -58,21 +56,15 @@ class MeetingController extends ChangeNotifier {
     this.timings = const LiveTimings(),
     this.onAudioBilled,
     DateTime Function()? clock,
-  })  : _room = roomSpeaker ?? speaker,
-        _target = target,
+  })  : _target = target,
         _now = clock ?? DateTime.now,
         assembler = CaptionAssembler(target: target) {
     _pipe = SessionPipe(opener: opener, onEvent: _onEvent, clock: _now);
-    _replyPipe = SessionPipe(opener: opener, onEvent: _onReplyEvent, clock: _now);
   }
 
   final MicSource mic;
 
-  /// The user's own read-aloud (headphones when they are in).
   final PcmSink speaker;
-
-  /// "Phát biểu": the phone's loudspeaker, for the room.
-  final PcmSink _room;
   final LibraryStore store;
   final String title;
   final MeetingContext context;
@@ -86,9 +78,6 @@ class MeetingController extends ChangeNotifier {
 
   final CaptionAssembler assembler;
   late final SessionPipe _pipe;
-
-  /// Carries "Tôi trả lời": what the user says, towards the other side.
-  late final SessionPipe _replyPipe;
 
   LiveState _state = LiveState.idle;
   LiveState get state => _state;
@@ -111,14 +100,6 @@ class MeetingController extends ChangeNotifier {
   int _reconnectAttempt = 0;
   final _glossaryChecked = Set<Sentence>.identity();
   LibraryItem? saved;
-
-  /// The reply being spoken or finished, if any.
-  LiveTurn? reply;
-  Lang? _replyLangChoice;
-
-  /// The meeting session hears silence until then: while the user replies
-  /// and while the phone speaks the reply, so neither is captioned twice.
-  DateTime _mainMutedUntil = DateTime.fromMillisecondsSinceEpoch(0);
 
   /// Questions asked during the meeting ("Hỏi nhanh"), saved with it.
   final List<QaPair> liveQa = [];
@@ -154,7 +135,6 @@ class MeetingController extends ChangeNotifier {
 
   Future<void> pause() async {
     if (_state != LiveState.live) return;
-    if (reply != null) await endReply();
     _setState(LiveState.pausing);
     await _stopMic();
     await _drainActive();
@@ -196,7 +176,6 @@ class MeetingController extends ChangeNotifier {
     }
     saved = item;
     await _pipe.dispose();
-    await _replyPipe.dispose();
     _setState(LiveState.finished);
     return item;
   }
@@ -206,7 +185,6 @@ class MeetingController extends ChangeNotifier {
     _ticker?.cancel();
     await _stopMic();
     await _pipe.dispose();
-    await _replyPipe.dispose();
     await speaker.stop();
     await awake.set(false);
     _setState(LiveState.finished);
@@ -241,132 +219,6 @@ class MeetingController extends ChangeNotifier {
     } finally {
       asking = false;
       notifyListeners();
-    }
-  }
-
-  /// The language "Tôi trả lời" speaks: the one chosen, else the language
-  /// most heard lately other than "Dịch sang".
-  Lang get replyLang {
-    final chosen = _replyLangChoice;
-    if (chosen != null && chosen != _target) return chosen;
-    final counts = <Lang, int>{};
-    final list = assembler.committed;
-    for (var i = list.length - 1; i >= 0 && i >= list.length - 12; i--) {
-      final l = list[i].lang;
-      if (l != null && l != _target && list[i].speaker == null) counts[l] = (counts[l] ?? 0) + 1;
-    }
-    if (counts.isNotEmpty) {
-      return (counts.entries.toList()..sort((a, b) => b.value.compareTo(a.value))).first.key;
-    }
-    return _target == Lang.vi ? Lang.zh : Lang.vi;
-  }
-
-  /// The language chosen for "Phát biểu", or null for automatic.
-  Lang? get replyLangChoice => _replyLangChoice == _target ? null : _replyLangChoice;
-
-  /// Picks the reply language; null goes back to automatic.
-  void setReplyLang(Lang? lang) {
-    _replyLangChoice = lang;
-    notifyListeners();
-  }
-
-  bool get replying => reply?.listening ?? false;
-
-  /// Starts "Tôi trả lời": the user's words go to a second session that
-  /// translates them into [replyLang]; the meeting session hears silence.
-  Future<void> startReply() async {
-    if (_state != LiveState.live || reply != null) return;
-    final turn = LiveTurn(0, recorded, null);
-    reply = turn;
-    unawaited(speaker.stop());
-    unawaited(_room.stop());
-    notifyListeners();
-    try {
-      final s = await _replyPipe.attach(
-        TranslateConfig(target: replyLang, noise: NoiseReduction.nearField),
-      );
-      if (!identical(reply, turn)) {
-        await s.close(timeout: const Duration(seconds: 1));
-        return;
-      }
-      turn.session = s;
-    } on Object catch (e) {
-      if (identical(reply, turn)) reply = null;
-      _replyPipe.clearBuffer();
-      notice = _describe(e);
-      notifyListeners();
-    }
-  }
-
-  /// Ends the reply: the phone speaks the translation aloud, then the
-  /// reply joins the captions as the user's own line.
-  Future<void> endReply() async {
-    final turn = reply;
-    if (turn == null || !turn.listening) return;
-    turn.listening = false;
-    for (final (pcm, rate) in turn.heldAudio) {
-      _speakReply(pcm, rate);
-    }
-    turn.heldAudio.clear();
-    notifyListeners();
-    final s = _replyPipe.detach();
-    if (s != null) {
-      await _replyPipe.drain(
-        s,
-        minWait: timings.drainMinWait,
-        quiet: timings.drainQuiet,
-        maxWait: timings.drainMaxWait,
-      );
-    }
-    _replyPipe.clearBuffer();
-    if (identical(reply, turn)) reply = null;
-    final said = turn.source.trim();
-    final out = turn.translation.trim();
-    if (said.isNotEmpty || out.isNotEmpty) {
-      assembler.insert(Sentence(
-        at: turn.at,
-        source: said,
-        translation: out,
-        lang: guessLang(said) ?? _target,
-        speaker: 0,
-      ));
-    }
-    notifyListeners();
-  }
-
-  void _speakReply(Uint8List pcm, int rate) {
-    unawaited(_room.play(pcm, rate));
-    final now = _now();
-    final from = _mainMutedUntil.isAfter(now) ? _mainMutedUntil : now;
-    _mainMutedUntil = from.add(Duration(microseconds: pcm.length * 1000000 ~/ (rate * 2)) + const Duration(milliseconds: 150));
-  }
-
-  void _onReplyEvent(TranslateEvent e, TranslateSession from) {
-    final turn = reply;
-    switch (e) {
-      case SourceDelta(:final text):
-        turn?.source += text;
-        notifyListeners();
-      case TranslationDelta(:final text):
-        turn?.translation += text;
-        notifyListeners();
-      case AudioDelta(:final pcm, :final sampleRate):
-        if (turn != null && turn.listening) {
-          turn.heldAudio.add((pcm, sampleRate));
-        } else {
-          _speakReply(pcm, sampleRate);
-        }
-      case SessionWarning(:final message):
-        notice = message;
-        notifyListeners();
-      case SessionEnded(:final error):
-        onAudioBilled?.call(from.audioSent);
-        if (error != null && turn != null && turn.listening) {
-          notice = _describe(error);
-          unawaited(endReply());
-        }
-      case SessionReady():
-        break;
     }
   }
 
@@ -405,14 +257,7 @@ class MeetingController extends ChangeNotifier {
     _micSub = stream.listen((pcm) {
       if (_state != LiveState.live && _state != LiveState.starting) return;
       _recordedBytes += pcm.length;
-      if (replying) {
-        _replyPipe.push(pcm);
-        _pipe.push(Uint8List(pcm.length));
-      } else if (_now().isBefore(_mainMutedUntil)) {
-        _pipe.push(Uint8List(pcm.length));
-      } else {
-        _pipe.push(pcm);
-      }
+      _pipe.push(pcm);
     });
   }
 
@@ -464,7 +309,7 @@ class MeetingController extends ChangeNotifier {
         _afterTextChange();
         notifyListeners();
       case AudioDelta(:final pcm, :final sampleRate):
-        if (_readAloud && reply == null) unawaited(speaker.play(pcm, sampleRate));
+        if (_readAloud) unawaited(speaker.play(pcm, sampleRate));
       case SessionWarning(:final message):
         notice = message;
         notifyListeners();
@@ -555,7 +400,7 @@ class MeetingController extends ChangeNotifier {
       if (_glossaryChecked.contains(s)) continue;
       _glossaryChecked.add(s);
       // The user's own replies go the other way; leave them as spoken.
-      if (!s.hasTranslation || s.speaker != null) continue;
+      if (!s.hasTranslation) continue;
       final hit = context.terms.any(
         (t) => t.source.trim().isNotEmpty && s.source.toLowerCase().contains(t.source.trim().toLowerCase()),
       );
@@ -602,7 +447,6 @@ class MeetingController extends ChangeNotifier {
     _ticker?.cancel();
     unawaited(_micSub?.cancel());
     unawaited(_pipe.dispose());
-    unawaited(_replyPipe.dispose());
     super.dispose();
   }
 }

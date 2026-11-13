@@ -552,8 +552,8 @@ class JumpToLatest extends StatelessWidget {
   );
 }
 
-/// SCOAI's orange capsule: "Tạm dừng" (or "Tiếp tục") on the left and a
-/// white "Hoàn tất" half on the right.
+/// SCOAI's orange capsule: "Pause" (or "Resume") on the left and a white
+/// "Stop" half on the right.
 class MeetingCapsule extends StatelessWidget {
   const MeetingCapsule({
     super.key,
@@ -570,7 +570,7 @@ class MeetingCapsule extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final label = resuming ? 'Đang tiếp tục…' : (paused ? 'Tiếp tục' : 'Tạm dừng');
+    final label = resuming ? 'Resuming…' : (paused ? 'Resume' : 'Pause');
     final icon = resuming ? Icons.hourglass_top_rounded : (paused ? Icons.play_arrow_rounded : Icons.pause_rounded);
     return DecoratedBox(
       decoration: BoxDecoration(gradient: accentGradient, borderRadius: BorderRadius.circular(32)),
@@ -595,10 +595,14 @@ class MeetingCapsule extends StatelessWidget {
                           Icon(icon, color: Colors.white),
                           const SizedBox(width: 8),
                           Flexible(
-                            child: Text(
-                              label,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w700, color: Colors.white),
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                label,
+                                maxLines: 1,
+                                textScaler: TextScaler.noScaling,
+                                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Colors.white),
+                              ),
                             ),
                           ),
                         ],
@@ -631,7 +635,7 @@ class MeetingCapsule extends StatelessWidget {
                         ),
                         const SizedBox(width: 10),
                         const Text(
-                          'Hoàn tất',
+                          'Stop',
                           style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: C.ink),
                         ),
                       ],
