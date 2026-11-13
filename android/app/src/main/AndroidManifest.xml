@@ -4,11 +4,20 @@
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <!-- "Sắp tới": read-only view of upcoming meetings. -->
     <uses-permission android:name="android.permission.READ_CALENDAR" />
+    <!-- Recording continues with the screen off, through a foreground
+         service of type "microphone"; its notification needs the last one. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <application
         android:label="SCOAI Voice"
         android:allowBackup="false"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+        <service
+            android:name=".RecordingService"
+            android:exported="false"
+            android:foregroundServiceType="microphone" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

@@ -53,6 +53,7 @@ class MeetingController extends ChangeNotifier {
     this._readAloud = false,
     this.textAi,
     this.awake = const NoScreenAwake(),
+    this.background = const NoBackgroundRecording(),
     this.timings = const LiveTimings(),
     this.onAudioBilled,
     DateTime Function()? clock,
@@ -72,6 +73,10 @@ class MeetingController extends ChangeNotifier {
   /// Used to re-translate sentences that contain a glossary term.
   final TextAi? textAi;
   final ScreenAwake awake;
+
+  /// Keeps the microphone alive with the screen off.
+  final BackgroundRecording background;
+
   final LiveTimings timings;
   final void Function(Duration audio)? onAudioBilled;
   final DateTime Function() _now;
@@ -97,6 +102,7 @@ class MeetingController extends ChangeNotifier {
   StreamSubscription<Uint8List>? _micSub;
   Timer? _ticker;
   bool _switching = false;
+  String _shownClock = '';
   int _reconnectAttempt = 0;
   final _glossaryChecked = Set<Sentence>.identity();
   LibraryItem? saved;
@@ -126,6 +132,7 @@ class MeetingController extends ChangeNotifier {
       await _attachNew();
       _ticker = Timer.periodic(timings.tick, (_) => _onTick());
       await awake.set(true);
+      await _showBackground();
       _setState(LiveState.live);
     } on Object catch (e) {
       await _stopMic();
@@ -143,6 +150,7 @@ class MeetingController extends ChangeNotifier {
     _pipe.clearBuffer();
     await speaker.stop();
     await awake.set(false);
+    await background.stop();
     _setState(LiveState.paused);
   }
 
@@ -153,6 +161,7 @@ class MeetingController extends ChangeNotifier {
       await _startMic();
       await _attachNew();
       await awake.set(true);
+      await _showBackground();
       _setState(LiveState.live);
     } on Object catch (e) {
       await _stopMic();
@@ -175,6 +184,7 @@ class MeetingController extends ChangeNotifier {
       await store.save(item);
     }
     saved = item;
+    await background.stop();
     await _pipe.dispose();
     _setState(LiveState.finished);
     return item;
@@ -187,6 +197,7 @@ class MeetingController extends ChangeNotifier {
     await _pipe.dispose();
     await speaker.stop();
     await awake.set(false);
+    await background.stop();
     _setState(LiveState.finished);
   }
 
@@ -356,6 +367,11 @@ class MeetingController extends ChangeNotifier {
       notifyListeners();
       return;
     }
+    final clock = formatClock(recorded);
+    if (clock != _shownClock) {
+      _shownClock = clock;
+      unawaited(background.update(title: _noticeTitle, text: 'Đang ghi · $clock'));
+    }
     if (assembler.hasPending && _now().difference(_lastText) >= timings.settleAfter) {
       assembler.settle();
       _afterTextChange();
@@ -422,6 +438,14 @@ class MeetingController extends ChangeNotifier {
     } on Object {
       // Keep the live translation if the correction fails.
     }
+  }
+
+  String get _noticeTitle => title.trim().isEmpty ? 'Cuộc họp' : title.trim();
+
+  /// Shows the ongoing notification that keeps the microphone running.
+  Future<void> _showBackground() async {
+    _shownClock = formatClock(recorded);
+    await background.start(title: _noticeTitle, text: 'Đang ghi · $_shownClock');
   }
 
   void _fail(String message) {

@@ -27,6 +27,7 @@ class AppServices {
     required this.newMic,
     required this.speaker,
     this.awake = const NoScreenAwake(),
+    this.background = const NoBackgroundRecording(),
     SessionOpener? opener,
     ResponsesClient? responses,
     TranscribeClient? transcriber,
@@ -58,6 +59,9 @@ class AppServices {
   final MicSource Function() newMic;
   final PcmSink speaker;
   final ScreenAwake awake;
+
+  /// Keeps a meeting recording with the screen off.
+  final BackgroundRecording background;
 
   late final SessionOpener _opener;
   late final TextAi _textAi;

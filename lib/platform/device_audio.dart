@@ -81,3 +81,33 @@ class WakelockAwake implements ScreenAwake {
   @override
   Future<void> set(bool on) => on ? WakelockPlus.enable() : WakelockPlus.disable();
 }
+
+/// The Android foreground service that keeps the microphone running with
+/// the screen off (see `RecordingService.kt`).
+class AndroidBackgroundRecording implements BackgroundRecording {
+  static const _channel = MethodChannel('scoai.voice/recording');
+
+  @override
+  Future<void> start({required String title, required String text}) =>
+      _call('start', title: title, text: text);
+
+  @override
+  Future<void> update({required String title, required String text}) =>
+      _call('update', title: title, text: text);
+
+  @override
+  Future<void> stop() => _call('stop');
+
+  Future<void> _call(String method, {String? title, String? text}) async {
+    try {
+      await _channel.invokeMethod<void>(method, {
+        if (title != null) 'title': title,
+        if (text != null) 'text': text,
+      });
+    } on PlatformException {
+      // Losing the notification must never stop the meeting.
+    } on MissingPluginException {
+      // Not Android.
+    }
+  }
+}

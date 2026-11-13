@@ -1,30 +1,44 @@
 package com.scoai.voice.openai
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterActivity() {
-    private var roomSpeaker: RoomSpeaker? = null
+    companion object {
+        private const val NOTIFICATION_REQUEST = 7301
+    }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
-        val speaker = RoomSpeaker(applicationContext)
-        roomSpeaker = speaker
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "scoai.voice/room_speaker")
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "scoai.voice/recording")
             .setMethodCallHandler { call, result ->
                 when (call.method) {
-                    "play" -> {
-                        val pcm = call.argument<ByteArray>("pcm")
-                        val rate = call.argument<Int>("rate") ?: 24000
-                        if (pcm == null) {
-                            result.error("bad_args", "pcm is missing", null)
-                        } else {
-                            result.success(speaker.play(pcm, rate))
-                        }
+                    // Keeps the microphone alive with the screen off.
+                    "start" -> {
+                        askForNotifications()
+                        RecordingService.send(
+                            applicationContext,
+                            RecordingService.ACTION_START,
+                            call.argument<String>("title"),
+                            call.argument<String>("text"),
+                        )
+                        result.success(null)
+                    }
+                    "update" -> {
+                        RecordingService.send(
+                            applicationContext,
+                            RecordingService.ACTION_UPDATE,
+                            call.argument<String>("title"),
+                            call.argument<String>("text"),
+                        )
+                        result.success(null)
                     }
                     "stop" -> {
-                        speaker.stop()
+                        RecordingService.send(applicationContext, RecordingService.ACTION_STOP)
                         result.success(null)
                     }
                     else -> result.notImplemented()
@@ -32,8 +46,14 @@ class MainActivity : FlutterActivity() {
             }
     }
 
-    override fun onDestroy() {
-        roomSpeaker?.stop()
-        super.onDestroy()
+    /**
+     * Android 13+ hides the recording notification unless the user allows
+     * notifications. The service runs either way, so a refusal only costs
+     * the notification.
+     */
+    private fun askForNotifications() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
+        val granted = checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+        if (!granted) requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), NOTIFICATION_REQUEST)
     }
 }

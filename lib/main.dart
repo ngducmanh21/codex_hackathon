@@ -24,6 +24,7 @@ Future<void> main() async {
     newMic: RecordMic.new,
     speaker: PcmSpeaker(),
     awake: const WakelockAwake(),
+    background: AndroidBackgroundRecording(),
     calendar: DeviceCalendarSource(),
   );
   runApp(ScoaiVoiceApp(services: services));

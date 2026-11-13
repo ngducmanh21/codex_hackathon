@@ -149,3 +149,28 @@ Future<void> waitFor(bool Function() condition, {Duration timeout = const Durati
     await Future<void>.delayed(const Duration(milliseconds: 5));
   }
 }
+
+/// Records what the foreground service was told.
+class FakeBackground implements BackgroundRecording {
+  final calls = <String>[];
+  String? title;
+  String? text;
+  bool get running => calls.isNotEmpty && calls.last != 'stop';
+
+  @override
+  Future<void> start({required String title, required String text}) async {
+    calls.add('start');
+    this.title = title;
+    this.text = text;
+  }
+
+  @override
+  Future<void> update({required String title, required String text}) async {
+    calls.add('update');
+    this.title = title;
+    this.text = text;
+  }
+
+  @override
+  Future<void> stop() async => calls.add('stop');
+}

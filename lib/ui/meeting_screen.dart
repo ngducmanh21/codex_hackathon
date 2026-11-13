@@ -68,6 +68,7 @@ class _MeetingScreenState extends State<MeetingScreen> {
           readAloud: widget.readAloud,
           textAi: s.textAi,
           awake: s.awake,
+          background: s.background,
           onAudioBilled: s.onAudioBilled,
         );
     c.addListener(_onChange);

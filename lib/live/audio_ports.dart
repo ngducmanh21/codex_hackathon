@@ -28,3 +28,29 @@ class NoScreenAwake implements ScreenAwake {
   @override
   Future<void> set(bool on) async {}
 }
+
+/// Keeps the recording alive while the screen is off or the user is in
+/// another app, and shows what is being recorded.
+///
+/// On Android this is a foreground service of type "microphone": without
+/// one the system stops the microphone as soon as the app leaves the
+/// foreground.
+abstract class BackgroundRecording {
+  Future<void> start({required String title, required String text});
+
+  /// Refreshes the notification's running time.
+  Future<void> update({required String title, required String text});
+
+  Future<void> stop();
+}
+
+/// For tests and hosts without a service.
+class NoBackgroundRecording implements BackgroundRecording {
+  const NoBackgroundRecording();
+  @override
+  Future<void> start({required String title, required String text}) async {}
+  @override
+  Future<void> update({required String title, required String text}) async {}
+  @override
+  Future<void> stop() async {}
+}
