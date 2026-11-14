@@ -191,6 +191,19 @@ Stop ──► Thư viện (JSON) ──► gpt-6.1-terra: tóm tắt, hỏi đ�
 - **Micro.** Cuộc họp luôn thu bằng micro của điện thoại, không dùng micro trên tai nghe.
 - **Chạy nền.** Android cắt micro ngay khi app rời khỏi màn hình, nên lúc ghi app chạy một foreground service kiểu `microphone` (`RecordingService.kt`) kèm thông báo thường trực. Android 13 trở lên hỏi quyền thông báo; từ chối thì việc ghi vẫn chạy, chỉ không thấy thông báo.
 
+## Tập demo một mình
+
+Không có người nói cùng thì tạo sẵn một đoạn hội thoại rồi phát từ laptop cạnh điện thoại:
+
+```bash
+export OPENAI_API_KEY=sk-...
+python3 tool/make_demo_audio.py tool/demo_zh.txt demo-zh.wav   # hoặc demo_en.txt
+```
+
+Mỗi dòng trong tệp kịch bản là `giọng đọc: lời nói`; công cụ đọc từng dòng rồi nối lại, chen khoảng lặng gần một giây để app tách câu. Hai kịch bản có sẵn mang đúng số và thuật ngữ (MOQ, 贴片, BOM, FOB) nên phần Ngữ cảnh và Giải thích có cái để khoe. Khoá đọc từ biến môi trường, không ghi vào tệp nào.
+
+Lúc phát, để điện thoại cách loa 20–30 cm.
+
 ## Kiểm thử
 
 ```bash

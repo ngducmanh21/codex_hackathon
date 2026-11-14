@@ -1,0 +1,16 @@
+# Cuộc họp mẫu với nhà cung cấp Thâm Quyến, tiếng Trung.
+# Mỗi dòng: giọng đọc rồi tới lời nói. Giọng có thể chọn: marin, cedar,
+# alloy, echo, fable, onyx, nova, shimmer.
+#
+#   export OPENAI_API_KEY=sk-...
+#   python3 tool/make_demo_audio.py tool/demo_zh.txt demo-zh.wav
+#
+# Có số và thuật ngữ (MOQ, 贴片, BOM, FOB) để khoe phần Ngữ cảnh và
+# Giải thích. Khoảng 45 giây.
+
+cedar: 大家好，我们开始吧。这次的样品大家都看过了吧？
+cedar: 如果订单超过五百件，我们可以把单价降到两块三五。
+cedar: MOQ 的话，我们最低要五百件。
+cedar: 贴片的部分我们下周就能开始，大概需要两周。
+cedar: 这个价格我们很难再降了，除非你们把数量提高到一千件。
+cedar: 请在周五之前把最新的 BOM 发给我们，我们按 FOB 深圳报价。

@@ -1,0 +1,13 @@
+# Cuộc họp mẫu với khách nói tiếng Anh.
+#
+#   export OPENAI_API_KEY=sk-...
+#   python3 tool/make_demo_audio.py tool/demo_en.txt demo-en.wav
+#
+# Dùng khi muốn demo chiều Anh sang Việt. Khoảng 45 giây.
+
+marin: Good morning everyone. Let's start with the delivery schedule.
+marin: The first batch of eighty boxes leaves the warehouse on Friday.
+marin: If you order more than five hundred units, we can drop the unit price to two thirty-five.
+marin: Our minimum order quantity is five hundred units, and the SMT work takes about two weeks.
+marin: We still need the customs papers from your side before Wednesday.
+marin: Could you send us the latest BOM so we can quote FOB Shenzhen?
