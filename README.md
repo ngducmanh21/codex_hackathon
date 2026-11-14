@@ -4,7 +4,7 @@
 
 > *English summary: a live meeting interpreter for Android (Vietnamese, Chinese, English). Bilingual captions per sentence, a "speak back" button that voices your reply in the other side's language through the loudspeaker, quick questions during the meeting, sentence explanations, photo-to-glossary context, summaries, Q&A and shareable minutes. All AI runs through the OpenAI API (`gpt-realtime-translate`, `gpt-transcribe`, `gpt-6-luna`, `gpt-6.1-terra`).*
 
-Giao diện theo SCOAI Voice (bản dịch offline). Khác ở chỗ bản này giao mọi việc AI cho OpenAI API, máy không chạy model nào. Mã gói Android là `com.scoai.voice.openai`, khác bản offline (`com.scoai.voice`), nên cài được cả hai trên một máy.
+Mã gói Android là `com.scoai.voice.openai`.
 
 ## Mục lục
 
